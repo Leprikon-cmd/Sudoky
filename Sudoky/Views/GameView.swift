@@ -6,6 +6,7 @@ import SwiftUI
 struct GameView: View {
     let difficulty: Difficulty                        // Уровень сложности
     let statsManager: StatsManager                    // Менеджер статистики
+    let playerProgressManager: PlayerProgressManager  // Менеджер игрока
     @Binding var path: NavigationPath                 // Навигационный путь (Stack)
 
     @StateObject private var viewModel: SudokuViewModel  // ViewModel игры
@@ -13,15 +14,16 @@ struct GameView: View {
     @State private var showLoseAlert = false              // Флаг проигрышного алерта
 
     // MARK: - Инициализация из сохранённой игры
-        init(savedGame: SavedGame, statsManager: StatsManager, path: Binding<NavigationPath>) {
+        init(savedGame: SavedGame, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
             _viewModel = StateObject(wrappedValue: SudokuViewModel(savedGame: savedGame))
             self.difficulty = savedGame.difficulty // <- тянем из сохранённого
             self.statsManager = statsManager
             self._path = path
+            self.playerProgressManager = playerProgressManager
         }
 
         // MARK: - Инициализация новой игры
-        init(difficulty: Difficulty, statsManager: StatsManager, path: Binding<NavigationPath>) {
+        init(difficulty: Difficulty, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
             _viewModel = StateObject(wrappedValue: SudokuViewModel(difficulty: difficulty,
                     showErrors: difficulty != .dokushin,
                     highlightIdenticals: difficulty != .dokushin
@@ -30,6 +32,7 @@ struct GameView: View {
             self.difficulty = difficulty
             self.statsManager = statsManager
             self._path = path
+            self.playerProgressManager = playerProgressManager
         }
 
     // MARK: - Тело View
@@ -95,6 +98,10 @@ struct GameView: View {
         // MARK: - Реакция на окончание игры
         .onChange(of: viewModel.isGameOver) { _, newValue in
             if newValue {
+                // Наказание за проигрыш
+                playerProgressManager.applyLossPenalty()
+
+                // Записываем статистику
                 statsManager.recordGame(
                     difficulty: difficulty,
                     won: false,
@@ -106,6 +113,12 @@ struct GameView: View {
         }
         .onChange(of: viewModel.isGameWon) { _, newValue in
             if newValue {
+                playerProgressManager.addXP(
+                    difficulty: difficulty,
+                    livesRemaining: viewModel.livesRemaining,
+                    elapsedTime: viewModel.elapsedTime
+                )
+
                 statsManager.recordGame(
                     difficulty: difficulty,
                     won: true,
@@ -175,6 +188,7 @@ private func formatTime(_ seconds: TimeInterval) -> String {
     GameView(
         difficulty: .новичок,
         statsManager: StatsManager(),
+        playerProgressManager: PlayerProgressManager.shared, // ← ВАЖНО
         path: .constant(NavigationPath())
     )
 }
