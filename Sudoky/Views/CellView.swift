@@ -29,10 +29,11 @@ struct CellView: View {
             // Фон ячейки с приоритетом: выбрана → ошибка → совпадение → обычная
             Rectangle()
                 .fill(
-                    cell.isSelected ? Color.yellow.opacity(0.4) :        // Выделение выбранной ячейки
-                    isError ? Color.red.opacity(0.3) :                   // Подсветка ошибки
-                    isHighlighted ? Color.blue.opacity(0.2) :            // Подсветка совпадающих значений
-                    Color.gray.opacity(0.2)                              // Обычный фон
+                    cell.isSelected ?
+                    Color("SelectedCellColor") :                    // Выделение выбранной ячейки
+                    isError ? Color("ErrorCellColor") :             // Подсветка ошибки
+                    isHighlighted ? Color("HighlightedCellColor") : // Подсветка совпадающих значений
+                    Color("CellBackground")                         // Обычный фон
                 )
 
             // Отображение значения, если не 0

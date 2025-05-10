@@ -23,7 +23,8 @@ class PlayerProgressManager: ObservableObject {
     }
 
     /// Добавляет опыт на основе параметров игры
-    func addXP(difficulty: Difficulty, livesRemaining: Int, elapsedTime: TimeInterval) {
+    @discardableResult
+    func addXP(difficulty: Difficulty, livesRemaining: Int, elapsedTime: TimeInterval) -> Double {
         let baseXP = 1.0
         let difficultyMultiplier: Double = {
             switch difficulty {
@@ -36,11 +37,11 @@ class PlayerProgressManager: ObservableObject {
         }()
 
         let lostLives = Double(difficulty.lives - livesRemaining)
-        let livesPenalty = lostLives * 1.0 // -1 XP за каждую потерю
+        let livesPenalty = lostLives * 1.0
 
         let timeBonus: Double = {
             let seconds = elapsedTime
-            let bonusFactor = max(0.0, (600.0 - seconds) / 600.0) // до +1.0
+            let bonusFactor = max(0.0, (600.0 - seconds) / 600.0)
             return bonusFactor * baseXP
         }()
 
@@ -50,14 +51,17 @@ class PlayerProgressManager: ObservableObject {
         currentXP += gainedXP
         updateLevel()
         save()
+        return gainedXP
     }
     
     /// Применяет штраф за поражение — вычитает 1% от текущего уровня XP
-    func applyLossPenalty() {
+    @discardableResult
+    func applyLossPenalty() -> Double {
         let penalty = max(1.0, Double(currentLevel)) * 0.01
         currentXP = max(0, currentXP - penalty)
         updateLevel()
         save()
+        return penalty
     }
 
     /// Обновляет текущий уровень, если достаточно XP
