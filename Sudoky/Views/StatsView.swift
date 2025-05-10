@@ -1,54 +1,62 @@
-
-//  StatsView.swift
-//  Sudoky
-
 import SwiftUI
 
 struct StatsView: View {
-    @ObservedObject var stats: StatsManager
+    let statsManager: StatsManager
+    @Binding var path: NavigationPath
+    @State private var selectedIndex = 0
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Статистика")
-                .font(.largeTitle)
+        VStack {
+            TabView(selection: $selectedIndex) {
+                ForEach(Array(Difficulty.allCases.enumerated()), id: \.offset) { index, difficulty in
+                    if let entry = statsManager.stats[difficulty] {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Spacer()
+                            Text(difficulty.rawValue.capitalized)
+                                .font(.largeTitle)
+                                .bold()
+                                .padding(.bottom)
 
-            HStack {
-                Text("Игр сыграно:")
-                Spacer()
-                Text("\(stats.gamesPlayed)")
-            }
+                            Text("Сыграно игр: \(entry.played)")
+                            Text("Побед: \(entry.wins)")
+                            Text("Лучшее время: \(formatTime(entry.bestTime))")
+                            Text("Серия побед: \(entry.winStreak) / рекорд: \(entry.maxWinStreak)")
+                            Text("Побед без ошибок: \(entry.flawlessStreak) / рекорд: \(entry.maxFlawlessStreak)")
 
-            HStack {
-                Text("Побед:")
-                Spacer()
-                Text("\(stats.wins)")
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(16)
+                        .padding(.horizontal, 24)
+                        .tag(index)
+                    }
+                }
             }
-
-            HStack {
-                Text("Лучшее время:")
-                Spacer()
-                Text(bestTimeFormatted)
-            }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+            .frame(height: 400)
 
             Button("Сбросить статистику") {
-                stats.resetStats()
+                statsManager.resetStats()
             }
             .foregroundColor(.red)
+            .padding(.top, 20)
         }
         .padding()
     }
 
-    var bestTimeFormatted: String {
-        if stats.bestTime == 0 {
-            return "–"
-        } else {
-            let minutes = Int(stats.bestTime) / 60
-            let seconds = Int(stats.bestTime) % 60
-            return String(format: "%02d:%02d", minutes, seconds)
-        }
+    func formatTime(_ time: TimeInterval) -> String {
+        guard time > 0 else { return "–" }
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
 #Preview {
-    StatsView(stats: StatsManager())
+    StatsView(
+        statsManager: StatsManager(),
+        path: .constant(NavigationPath())
+    )
 }

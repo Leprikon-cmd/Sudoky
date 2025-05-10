@@ -16,7 +16,7 @@ struct SudokuGenerator {
         for row in 0..<9 {
             for col in 0..<9 {
                 if board[row][col] == 0 {
-                    var numbers = Array(1...9).shuffled()
+                    let numbers = Array(1...9).shuffled()
                     for num in numbers {
                         if isValid(board, row, col, num) {
                             board[row][col] = num
@@ -54,13 +54,13 @@ struct SudokuGenerator {
     }
 
     private static func removeCells(_ board: inout [[Int]], for difficulty: Difficulty) {
-        let totalCells = 81
         let cellsToRemove: Int
         switch difficulty {
-        case .новичок: cellsToRemove = 30
+        case .новичок: cellsToRemove = 1 //Для тестов
         case .ученик:  cellsToRemove = 40
         case .мастер:  cellsToRemove = 50
         case .сенсей:  cellsToRemove = 60
+        case .dokushin:  cellsToRemove = 60
         }
 
         var attempts = 0

@@ -1,43 +1,75 @@
-
-//  StatsManager.swift
-//  Sudoky
-
 import Foundation
 
-class StatsManager: ObservableObject {
-    private let defaults = UserDefaults.standard
+/// Хранит статистику для конкретного уровня сложности
+struct StatsEntry: Codable {
+    var played: Int = 0                // Количество сыгранных игр
+    var wins: Int = 0                  // Количество побед
+    var bestTime: TimeInterval = 0     // Лучшее время прохождения (в секундах)
 
-    @Published var gamesPlayed: Int
-    @Published var wins: Int
-    @Published var bestTime: TimeInterval
+    var winStreak: Int = 0             // Текущая серия побед подряд
+    var maxWinStreak: Int = 0          // Максимальная серия побед
+
+    var flawlessStreak: Int = 0        // Текущая серия flawless-побед (без ошибок)
+    var maxFlawlessStreak: Int = 0     // Максимальная flawless-серия
+}
+
+class StatsManager: ObservableObject {
+    @Published var stats: [Difficulty: StatsEntry] = [:]
 
     init() {
-        self.gamesPlayed = defaults.integer(forKey: "gamesPlayed")
-        self.wins = defaults.integer(forKey: "wins")
-        self.bestTime = defaults.double(forKey: "bestTime")
-    }
-
-    func recordGame(won: Bool, time: TimeInterval?) {
-        gamesPlayed += 1
-        if won {
-            wins += 1
-            if let t = time, (bestTime == 0 || t < bestTime) {
-                bestTime = t
-            }
+        if let data = UserDefaults.standard.data(forKey: "difficultyStats"),
+           let decoded = try? JSONDecoder().decode([Difficulty: StatsEntry].self, from: data) {
+            self.stats = decoded
+        } else {
+            self.stats = Dictionary(uniqueKeysWithValues: Difficulty.allCases.map { ($0, StatsEntry()) })
         }
-        save()
     }
-
+    
+    /// Сбрасывает статистику по всем уровням сложности
     func resetStats() {
-        gamesPlayed = 0
-        wins = 0
-        bestTime = 0
-        save()
+        stats = Dictionary(uniqueKeysWithValues: Difficulty.allCases.map { ($0, StatsEntry()) })
+        saveStats()
     }
+    
+    /// Обновляет статистику по результатам игры
+    func recordGame(difficulty: Difficulty, won: Bool, time: TimeInterval?, flawless: Bool) {
+        var entry = stats[difficulty] ?? StatsEntry()
 
-    private func save() {
-        defaults.set(gamesPlayed, forKey: "gamesPlayed")
-        defaults.set(wins, forKey: "wins")
-        defaults.set(bestTime, forKey: "bestTime")
+        entry.played += 1
+
+        if won {
+            entry.wins += 1
+
+            // Обновим лучшее время
+            if let t = time, (entry.bestTime == 0 || t < entry.bestTime) {
+                entry.bestTime = t
+            }
+
+            // Победная серия
+            entry.winStreak += 1
+            entry.maxWinStreak = max(entry.maxWinStreak, entry.winStreak)
+
+            // Безошибочная серия
+            if flawless {
+                entry.flawlessStreak += 1
+                entry.maxFlawlessStreak = max(entry.maxFlawlessStreak, entry.flawlessStreak)
+            } else {
+                entry.flawlessStreak = 0
+            }
+
+        } else {
+            // Если проиграл — сбрасываем серии
+            entry.winStreak = 0
+            entry.flawlessStreak = 0
+        }
+
+        stats[difficulty] = entry
+        saveStats()
+    }
+    /// Сохраняет словарь статистики в UserDefaults
+    private func saveStats() {
+        if let data = try? JSONEncoder().encode(stats) {
+            UserDefaults.standard.set(data, forKey: "difficultyStats")
+        }
     }
 }

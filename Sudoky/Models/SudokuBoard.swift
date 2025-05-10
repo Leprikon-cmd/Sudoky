@@ -43,4 +43,51 @@ struct SudokuBoard {
             }
         }
     }
+    mutating func validateBoard() {
+        for row in 0..<9 {
+            for col in 0..<9 {
+                let value = cells[row][col].value
+
+                if value == 0 {
+                    cells[row][col].hasError = false // <-- ключевая строка
+                } else {
+                    cells[row][col].hasError = !isValid(row: row, col: col, value: value)
+                }
+            }
+        }
+    }
+    func isSolved() -> Bool {
+        for row in 0..<9 {
+            for col in 0..<9 {
+                let val = cells[row][col].value
+                if val == 0 || !isValid(row: row, col: col, value: val) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    // Валидатор (переиспользуем из генератора)
+    private func isValid(row: Int, col: Int, value: Int) -> Bool {
+        for i in 0..<9 {
+            if i != col && cells[row][i].value == value { return false }
+            if i != row && cells[i][col].value == value { return false }
+        }
+
+        let boxRow = (row / 3) * 3
+        let boxCol = (col / 3) * 3
+        for r in 0..<3 {
+            for c in 0..<3 {
+                let checkRow = boxRow + r
+                let checkCol = boxCol + c
+                if (checkRow != row || checkCol != col),
+                   cells[checkRow][checkCol].value == value {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
 }

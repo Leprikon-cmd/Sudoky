@@ -23,6 +23,9 @@ struct KeypadView: View {
                         .font(.title2)
                 }
             }
+            Button("⌫") {
+                onNumberTap(0)
+            }
         }
         .padding()
     }

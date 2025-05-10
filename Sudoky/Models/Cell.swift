@@ -12,4 +12,5 @@ struct Cell: Identifiable {
     var value: Int         // От 1 до 9, 0 если пусто
     var isEditable: Bool   // Можно ли редактировать (false для исходной доски)
     var isSelected: Bool   // Подсвечена ли ячейка
+    var hasError: Bool = false
 }
