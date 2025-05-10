@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Cell: Codable, Identifiable {
+struct Cell: Codable, Hashable, Identifiable {
     var id: UUID = UUID()
     var row: Int
     var col: Int

@@ -18,37 +18,50 @@ class SudokuViewModel: ObservableObject {
     let highlightIdenticals: Bool
     let difficulty: Difficulty  // ← сохраняем сложность внутри ViewModel
     private var timerCancellable: AnyCancellable?
-
-    init(loadSaved: Bool = false, difficulty: Difficulty, showErrors: Bool, highlightIdenticals: Bool) {
+    
+    init(savedGame: SavedGame) {
+        self.difficulty = savedGame.difficulty
+        self.showErrors = savedGame.difficulty != .dokushin
+        self.highlightIdenticals = savedGame.difficulty != .dokushin
+        self.board = SudokuBoard(from: savedGame.cells)
+        self.elapsedTime = savedGame.elapsedTime
+        self.livesRemaining = savedGame.livesRemaining
+        self.highlightedValue = savedGame.highlightedValue
+        startTimer()
+        if livesRemaining == 0 {
+            isGameOver = true
+        }
+    }
+    
+    init(difficulty: Difficulty, showErrors: Bool, highlightIdenticals: Bool) {
         self.difficulty = difficulty
         self.showErrors = showErrors
         self.highlightIdenticals = highlightIdenticals
         self.livesRemaining = difficulty.lives
         self.elapsedTime = 0
 
-        if loadSaved, let saved = GamePersistenceManager.shared.load() {
-            self.board = SudokuBoard(from: saved.cells)
-            self.elapsedTime = saved.elapsedTime
-            self.livesRemaining = saved.livesRemaining
-            self.highlightedValue = saved.highlightedValue
-        } else {
-            let matrix = SudokuGenerator.generate(difficulty: difficulty)
-            self.board = SudokuBoard(from: matrix)
-        }
+        let matrix = SudokuGenerator.generate(difficulty: difficulty)
+        self.board = SudokuBoard(from: matrix)
 
         startTimer()
     }
     
     /// Сохраняет текущее состояние игры
     func saveGame() {
+        guard !isGameOver && !isGameWon else {
+            // Не сохраняем, если игра уже завершена
+            return
+        }
+
         let saved = SavedGame(
-            cells: board.cells,              // сохраняем ячейки
-            difficulty: self.difficulty,     // сохраняем текущую сложность
-            elapsedTime: elapsedTime,        // сколько времени прошло
-            livesRemaining: livesRemaining,  // сколько жизней осталось
-            highlightedValue: highlightedValue  // текущее выделенное значение
+            cells: board.cells,
+            difficulty: difficulty,
+            elapsedTime: elapsedTime,
+            livesRemaining: livesRemaining,
+            highlightedValue: highlightedValue
         )
-        GamePersistenceManager.shared.save(saved)  // сохраняем через менеджер
+
+        GamePersistenceManager.shared.save(saved)
     }
     
     /// Загружает сохранённую игру (если есть)

@@ -12,19 +12,25 @@ struct GameView: View {
     @State private var showWinAlert = false               // Флаг победного алерта
     @State private var showLoseAlert = false              // Флаг проигрышного алерта
 
-    // MARK: - Инициализация
-    init(difficulty: Difficulty, statsManager: StatsManager, path: Binding<NavigationPath>) {
-        _viewModel = StateObject(
-            wrappedValue: SudokuViewModel(
-                difficulty: difficulty,
-                showErrors: difficulty != .dokushin,
-                highlightIdenticals: difficulty != .dokushin
+    // MARK: - Инициализация из сохранённой игры
+        init(savedGame: SavedGame, statsManager: StatsManager, path: Binding<NavigationPath>) {
+            _viewModel = StateObject(wrappedValue: SudokuViewModel(savedGame: savedGame))
+            self.difficulty = savedGame.difficulty // <- тянем из сохранённого
+            self.statsManager = statsManager
+            self._path = path
+        }
+
+        // MARK: - Инициализация новой игры
+        init(difficulty: Difficulty, statsManager: StatsManager, path: Binding<NavigationPath>) {
+            _viewModel = StateObject(wrappedValue: SudokuViewModel(difficulty: difficulty,
+                    showErrors: difficulty != .dokushin,
+                    highlightIdenticals: difficulty != .dokushin
+                )
             )
-        )
-        self.difficulty = difficulty
-        self.statsManager = statsManager
-        self._path = path
-    }
+            self.difficulty = difficulty
+            self.statsManager = statsManager
+            self._path = path
+        }
 
     // MARK: - Тело View
     var body: some View {
@@ -40,15 +46,11 @@ struct GameView: View {
                         .foregroundColor(.red)
                 }
             }
+            
             .onDisappear {
-                // Если игрок победил или проиграл — удаляем сохранение, оно больше не нужно
-                if viewModel.isGameWon || viewModel.isGameOver {
-                    GamePersistenceManager.shared.clear() // 🧹 Удаляем сохранённую игру
-                } else {
-                    // Иначе — сохраняем текущее состояние
-                    viewModel.saveGame() // 💾 Сохраняем текущий прогресс
-                }
+                viewModel.saveGame() //Сохраняемся при выходе
             }
+            
             .padding(.bottom, 8)
 
             // Таймер

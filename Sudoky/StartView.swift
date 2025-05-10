@@ -4,6 +4,7 @@ struct StartView: View {
     let statsManager: StatsManager
     @Binding var path: NavigationPath
     @AppStorage("playerMotto") private var playerMotto: String = ""
+    @State private var hasSave: Bool = false  // ← следим за наличием сохранения
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -11,44 +12,44 @@ struct StartView: View {
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
-
+            
             VStack(spacing: 20) {
                 Spacer()
-
+                
                 Text("Судоку. Путь мудреца")
                     .font(.largeTitle)
                     .bold()
-
+                
                 TextField("Впиши свою мудрость...", text: $playerMotto)
+                    .submitLabel(.done)
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                     .background(Color.white.opacity(0.2))
                     .cornerRadius(20)
-
+                
                 Button("🧩 Новый Путь") {
                     path.append(Route.difficulty)
                 }
                 .buttonStyle(.borderedProminent)
-
+                
                 Button("📜 Уровни познания") {
                     path.append(Route.stats)
                 }
                 .buttonStyle(.bordered)
-
-                if hasSavedGame() == true {
+                
+                // ← теперь по hasSave
+                if hasSave {
                     Button("🛤 Продолжить путь") {
-                        if let saved = GamePersistenceManager.shared.load() {
-                            path.append(Route.game(saved.difficulty))
-                        }
+                        path.append(Route.resume)
                     }
                     .buttonStyle(.bordered)
                 }
-
+                
                 Spacer()
             }
             .padding()
-
+            
             Button(action: {
                 path.append(Route.settings)
             }) {
@@ -58,6 +59,9 @@ struct StartView: View {
                     .clipShape(Circle())
             }
             .padding()
+        }
+        .onAppear {
+            hasSave = hasSavedGame()  // ← проверка при каждом появлении
         }
     }
 

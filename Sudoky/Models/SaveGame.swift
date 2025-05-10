@@ -7,7 +7,7 @@
 import Foundation
 
 /// Структура для сохранения состояния игры
-struct SavedGame: Codable {
+struct SavedGame: Codable, Hashable {
     let cells: [[Cell]]                // Текущее состояние всех ячеек
     let difficulty: Difficulty         // Выбранная сложность
     let elapsedTime: TimeInterval      // Прошедшее время
