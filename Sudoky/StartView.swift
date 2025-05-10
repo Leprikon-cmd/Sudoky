@@ -36,9 +36,11 @@ struct StartView: View {
                 }
                 .buttonStyle(.bordered)
 
-                if hasSavedGame() {
+                if hasSavedGame() == true {
                     Button("🛤 Продолжить путь") {
-                        // TODO: Загрузка сохранённой игры
+                        if let saved = GamePersistenceManager.shared.load() {
+                            path.append(Route.game(saved.difficulty))
+                        }
                     }
                     .buttonStyle(.bordered)
                 }
@@ -60,8 +62,7 @@ struct StartView: View {
     }
 
     func hasSavedGame() -> Bool {
-        // TODO: реализовать логику проверки наличия сохранённой игры
-        return false
+        return GamePersistenceManager.shared.load() != nil
     }
 }
 

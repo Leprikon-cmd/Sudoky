@@ -7,7 +7,7 @@ import Foundation
 
 struct SudokuBoard {
     var cells: [[Cell]]
-
+    
     init(from matrix: [[Int]]) {
         self.cells = []
         for row in 0..<9 {
@@ -25,6 +25,10 @@ struct SudokuBoard {
             }
             self.cells.append(rowCells)
         }
+    }
+    
+    init(from cells: [[Cell]]) {
+        self.cells = cells
     }
 
     func cell(atRow row: Int, col: Int) -> Cell {

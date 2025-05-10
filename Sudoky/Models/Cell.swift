@@ -5,8 +5,8 @@
 
 import Foundation
 
-struct Cell: Identifiable {
-    let id = UUID()
+struct Cell: Codable, Identifiable {
+    var id: UUID = UUID()
     var row: Int
     var col: Int
     var value: Int         // От 1 до 9, 0 если пусто
