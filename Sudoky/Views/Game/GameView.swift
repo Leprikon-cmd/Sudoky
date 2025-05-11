@@ -40,12 +40,14 @@ struct GameView: View {
     var body: some View {
         ZStack {
             VStack {
+                //Сложность, время, жизни
                 GameHeaderView(
                     difficulty: difficulty,
                     timeElapsed: viewModel.elapsedTime,
                     livesRemaining: viewModel.livesRemaining
                 )
                 
+                //Игровое поле
                 GeometryReader { geo in
                     GameBoardView(
                         cells: viewModel.board.cells,
@@ -56,10 +58,16 @@ struct GameView: View {
                         geo: geo
                     )
                 }
-                
-                // Кнопочная панель
-                KeypadView { number in
-                    viewModel.enterNumber(number)
+                HStack(spacing: 16) {
+                    NotesKeypadView { note in
+                        print("Заметка: \(note)")
+                        // viewModel.addNote(note) // ← сюда позже повесим обработку
+                    }
+                    
+                    // Кнопочная панель
+                    KeypadView { number in
+                        viewModel.enterNumber(number)
+                    }
                 }
             }
             
