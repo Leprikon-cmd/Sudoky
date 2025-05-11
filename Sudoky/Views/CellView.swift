@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct CellView: View {
+    @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
     let cell: Cell
     let row: Int
     let col: Int
@@ -30,18 +31,38 @@ struct CellView: View {
             Rectangle()
                 .fill(
                     cell.isSelected ?
-                    Color("SelectedCellColor") :                    // Выделение выбранной ячейки
-                    isError ? Color("ErrorCellColor") :             // Подсветка ошибки
-                    isHighlighted ? Color("HighlightedCellColor") : // Подсветка совпадающих значений
-                    Color("CellBackground")                         // Обычный фон
+                        Color("SelectedCellColor") :                    // Выделение выбранной ячейки
+                    isError ?
+                        Color("ErrorCellColor") :                      // Подсветка ошибки
+                    isHighlighted ?
+                        Color("HighlightedCellColor") :               // Подсветка совпадающих значений
+                        Color("CellBackground")                        // Обычный фон
                 )
 
-            // Отображение значения, если не 0
-            Text(cell.value == 0 ? "" : "\(cell.value)")
-                .font(.system(size: cellSize * 0.5))
-                .foregroundColor(cell.isEditable ? .blue : .black) // Цвет для редактируемых/нередактируемых
+            // Если в ячейке есть основное число — отображаем его
+            if cell.value != 0 {
+                Text("\(cell.value)")
+                    .font(.system(size: cellSize * 0.5))              // ← меняй размер цифры
+                    .foregroundColor(cell.isEditable ? .blue : .black)
+            }
+            // Если число не задано (0), но есть заметки — отрисовываем мини-сетку
+            else if !cell.notes.isEmpty {
+                VStack(spacing: 1) {
+                    ForEach(0..<3) { row in
+                        HStack(spacing: 1) {
+                            ForEach(1..<4) { col in
+                                let noteValue = row * 3 + col
+                                Text(cell.notes.contains(noteValue) ? "\(noteValue)" : "")
+                                    .font(.system(size: cellSize * 0.3))     // ← меняй размер цифр заметок
+                                    .frame(width: cellSize / 3, height: cellSize / 3)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                }
+            }
         }
-        // Размер ячейки
+        // Размер всей ячейки
         .frame(width: cellSize, height: cellSize)
     }
 }

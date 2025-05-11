@@ -5,65 +5,93 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var settings: SettingsManager
+    @AppStorage("selectedFont") private var selectedFont: String = "System"
+    @AppStorage("playerMotto") private var playerMotto: String = ""
 
     var body: some View {
         Form {
-            Section(header: Text("Подсказки")) {
-                Toggle("Подсвечивать ошибки", isOn: $settings.highlightErrors)
-                Toggle("Показать таймер", isOn: $settings.showTimer)
-                Toggle("Показать жизни", isOn: $settings.showLives)
-            }
+            hintsSection
+            fontsSection
+            boardStyleSection
+            themeSection
+            languageSection
+            soundSection
+            timerSection
+        }
+        .navigationTitle("Настройки")
+    }
 
-            Section(header: Text("Стиль цифр")) {
-                Picker("Шрифт", selection: $settings.selectedFont) {
-                    ForEach(settings.fontOptions, id: \.self) { option in
-                        Text(option)
-                    }
-                }
-            }
+    private var hintsSection: some View {
+        Section(header: Text("Подсказки")) {
+            Toggle("Подсвечивать ошибки", isOn: $settings.highlightErrors)
+            Toggle("Показать таймер", isOn: $settings.showTimer)
+            Toggle("Показать жизни", isOn: $settings.showLives)
+        }
+    }
 
-            Section(header: Text("Вид поля")) {
-                Picker("Стиль", selection: $settings.selectedBoardStyle) {
-                    ForEach(settings.boardStyles, id: \.self) { option in
-                        Text(option)
-                    }
-                }
-            }
+    private var fontsSection: some View {
+        Section(header: Text("Шрифты")) {
+            let fonts = ["System", "Pacifico", "CormorantGaramond", "Medieval", "OldStandard", "RuslanDisplay", "ShareTech"]
 
-            Section(header: Text("Тема оформления")) {
-                Picker("Тема", selection: $settings.selectedTheme) {
-                    ForEach(settings.themes, id:\.self) { theme in
-                        Text(theme)
-                    }
-                }
-            }
-
-            Section(header: Text("Язык интерфейса")) {
-                Picker("Язык", selection: $settings.language) {
-                    ForEach(settings.languages, id:\.self) { lang in
-                        Text(lang.uppercased())
-                    }
-                }
-            }
-
-            Section(header: Text("Звук")) {
-                Toggle("Включить звук", isOn: $settings.soundEnabled)
-            }
-
-            Section(header: Text("Пользовательский таймер")) {
-                Toggle("Ограничить по времени", isOn: $settings.timerMode)
-                if settings.timerMode {
-                    Stepper(value: $settings.maxTime, in: 60...1800, step: 60) {
-                        Text("Макс. время: \(settings.formattedMaxTime())")
-                    }
+            Picker("Выбери шрифт", selection: $selectedFont) {
+                ForEach(fonts, id: \.self) { fontName in
+                    Text(fontName)
+                        .font(FontManager.shared.font(size: 16))
                 }
             }
         }
-        .navigationTitle("Настройки")
+    }
+
+    private var boardStyleSection: some View {
+        Section(header: Text("Вид поля")) {
+            Picker("Стиль", selection: $settings.selectedBoardStyle) {
+                ForEach(settings.boardStyles, id: \.self) { option in
+                    Text(option)
+                }
+            }
+        }
+    }
+
+    private var themeSection: some View {
+        Section(header: Text("Тема оформления")) {
+            Picker("Тема", selection: $settings.selectedTheme) {
+                ForEach(settings.themes, id: \.self) { theme in
+                    Text(theme)
+                }
+            }
+        }
+    }
+
+    private var languageSection: some View {
+        Section(header: Text("Язык интерфейса")) {
+            Picker("Язык", selection: $settings.language) {
+                ForEach(settings.languages, id: \.self) { lang in
+                    Text(lang.uppercased())
+                }
+            }
+        }
+    }
+
+    private var soundSection: some View {
+        Section(header: Text("Звук")) {
+            Toggle("Включить звук", isOn: $settings.soundEnabled)
+        }
+    }
+
+    private var timerSection: some View {
+        Section(header: Text("Пользовательский таймер")) {
+            Toggle("Ограничить по времени", isOn: $settings.timerMode)
+            if settings.timerMode {
+                Stepper(value: $settings.maxTime, in: 60...1800, step: 60) {
+                    Text("Макс. время: \(settings.formattedMaxTime())")
+                }
+            }
+        }
     }
 }
 
 #Preview {
     SettingsView()
         .environmentObject(SettingsManager())
+        .environmentObject(FontManager.shared)
 }

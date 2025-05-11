@@ -4,6 +4,7 @@ struct StatsView: View {
     let statsManager: StatsManager
     @Binding var path: NavigationPath
     @State private var selectedIndex = 0
+    @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
 
     var body: some View {
         VStack {

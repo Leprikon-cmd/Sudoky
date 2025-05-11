@@ -29,9 +29,22 @@
 		275BD0FC2DCE05CB0014413F /* SudokyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SudokyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		275BD2F72DD0BE3B0014413F /* Exceptions for "Sudoky" folder in "Sudoky" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 275BD0E42DCE05C70014413F /* Sudoky */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		275BD0E72DCE05C80014413F /* Sudoky */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				275BD2F72DD0BE3B0014413F /* Exceptions for "Sudoky" folder in "Sudoky" target */,
+			);
 			path = Sudoky;
 			sourceTree = "<group>";
 		};
@@ -402,6 +415,7 @@
 				DEVELOPMENT_TEAM = 73P89VLQ3W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Sudoky/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -431,6 +445,7 @@
 				DEVELOPMENT_TEAM = 73P89VLQ3W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Sudoky/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

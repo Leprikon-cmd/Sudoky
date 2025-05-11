@@ -133,6 +133,27 @@ class SudokuViewModel: ObservableObject {
             GamePersistenceManager.shared.clear()
         }
     }
+    
+    func toggleNote(_ number: Int) {
+        guard let selected = selectedCell else { return }
+        var cell = board.cells[selected.row][selected.col]
+
+        // Только для редактируемых и пустых ячеек
+        guard cell.isEditable, cell.value == 0 else { return }
+
+        if cell.notes.contains(number) {
+            cell.notes.removeAll { $0 == number }
+        } else {
+            cell.notes.append(number)
+            cell.notes.sort()
+        }
+
+        board.cells[selected.row][selected.col] = cell
+    }
+    
+    var selectedCellValue: Int? {
+        selectedCell?.value
+    }
 
     var selectedCell: Cell? {
         for row in board.cells {

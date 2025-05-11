@@ -5,15 +5,15 @@ struct StartView: View {
     @Binding var path: NavigationPath
     @AppStorage("playerMotto") private var playerMotto: String = ""
     @State private var hasSave: Bool = false
+    @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
 
     @EnvironmentObject var playerProgress: PlayerProgressManager
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Image("BackgroundImage")
-                .resizable()
-                .scaledToFill()
+        ZStack(alignment: .top) {
+            BackgroundView() // ← всё сделает сам
                 .ignoresSafeArea()
+    
             
             VStack() {
                 
@@ -33,12 +33,12 @@ struct StartView: View {
                 // Поле ввода текста внутри облачка
                 TextField("Впиши свою мудрость...", text: $playerMotto)
                         .padding() // ← Внутренний отступ текста от краёв рамки. Стандартное значение (обычно 16)
-                        .font(.callout) // ← Размер и стиль шрифта. Можно заменить на .body, .footnote, .headline и т.п.
                         .foregroundColor(.black) // ← Цвет вводимого текста
                         .multilineTextAlignment(.leading) // ← Текст будет выравниваться по левому краю
+                        .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
                 }
                 // Размер блока облачка
-                .frame(maxWidth: 300, minHeight: 20, maxHeight: 50) // ← Максимальная ширина = 300 поинтов, минимальная высота = 80. Увеличь для более просторного поля.
+                .frame(maxWidth: 300, minHeight: 20, maxHeight: 50) // ← Максимальная ширина = 300 поинтов, мин. высота = 20 мин. высота 50
                 // Отступ снизу от следующего элемента
                 .padding(.bottom, 10) // ← Отступ вниз. Если снизу элемент прилипает — увеличь.
                 
@@ -54,12 +54,12 @@ struct StartView: View {
                 
                 // Уровень и имя
                 Text("Уровень \(playerProgress.currentLevel)")
-                    .font(.headline)
+                    .font(fontManager.font(size: 12)) // Размер и стиль шрифта.
                     .foregroundColor(.white)
                 
                 // Уровень и прогресс
                 Text("Уровень: \(playerProgress.currentLevel)")
-                    .font(.subheadline)
+                    .font(fontManager.font(size: 12)) // Размер и стиль шрифта.
                 
                 ProgressView(
                     value: progressPercent(),
@@ -69,7 +69,7 @@ struct StartView: View {
                 .frame(width: 200)
                 
                 Text(String(format: "%.0f / %.0f XP", playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()), xpForNext()))
-                    .font(.caption)
+                    .font(fontManager.font(size: 12)) // Размер и стиль шрифта.
                     .foregroundColor(.gray)
 
                 // Кнопки
@@ -77,17 +77,20 @@ struct StartView: View {
                     path.append(Route.difficulty)
                 }
                 .buttonStyle(.borderedProminent)
+                .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
 
                 Button("📜 Уровни познания") {
                     path.append(Route.stats)
                 }
                 .buttonStyle(.bordered)
+                .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
 
                 if hasSave {
                     Button("🛤 Продолжить путь") {
                         path.append(Route.resume)
                     }
                     .buttonStyle(.bordered)
+                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
                 }
 
                 Spacer()
@@ -108,8 +111,14 @@ struct StartView: View {
         }
         .onAppear {
             hasSave = hasSavedGame()
+            for family in UIFont.familyNames.sorted() {
+                    print("🔤 \(family)")
+                    for name in UIFont.fontNames(forFamilyName: family) {
+                        print("   👉 \(name)")
+                    }
+                }
+            }
         }
-    }
 
     private func progressPercent() -> Double {
         let current = playerProgress.currentXP

@@ -7,48 +7,56 @@ struct GameView: View {
     let difficulty: Difficulty                        // Уровень сложности
     let statsManager: StatsManager                    // Менеджер статистики
     let playerProgressManager: PlayerProgressManager  // Менеджер игрока
-    @Binding var path: NavigationPath                 // Навигационный путь (Stack)
-
+    @Binding var path: NavigationPath                 // Навигационный стек
+    @EnvironmentObject var fontManager: FontManager   // Менеджер шрифтов
+    
     @StateObject private var viewModel: SudokuViewModel   // ViewModel игры
-    @State private var showWinAlert = false               // Флаг победного алерта
-    @State private var showLoseAlert = false              // Флаг проигрышного алерта
-    @State private var gainedXP: Int = 0                  // Сколько опыта получено или потеряно
-
-    // MARK: - Инициализация из сохранённой игры
-        init(savedGame: SavedGame, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
-            _viewModel = StateObject(wrappedValue: SudokuViewModel(savedGame: savedGame))
-            self.difficulty = savedGame.difficulty // <- тянем из сохранённого
-            self.statsManager = statsManager
-            self._path = path
-            self.playerProgressManager = playerProgressManager
-        }
-
-        // MARK: - Инициализация новой игры
-        init(difficulty: Difficulty, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
-            _viewModel = StateObject(wrappedValue: SudokuViewModel(difficulty: difficulty,
-                    showErrors: difficulty != .dokushin,
-                    highlightIdenticals: difficulty != .dokushin
-                )
+    @State private var showWinAlert = false               // Показывать алерт победы?
+    @State private var showLoseAlert = false              // Показывать алерт проигрыша?
+    @State private var gainedXP: Int = 0                  // Опыт, полученный за партию
+    
+    // MARK: - Инициализация из сохранения
+    init(savedGame: SavedGame, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
+        _viewModel = StateObject(wrappedValue: SudokuViewModel(savedGame: savedGame))
+        self.difficulty = savedGame.difficulty
+        self.statsManager = statsManager
+        self._path = path
+        self.playerProgressManager = playerProgressManager
+    }
+    
+    // MARK: - Инициализация новой игры
+    init(difficulty: Difficulty, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
+        _viewModel = StateObject(
+            wrappedValue: SudokuViewModel(
+                difficulty: difficulty,
+                showErrors: difficulty != .dokushin,
+                highlightIdenticals: difficulty != .dokushin
             )
-            self.difficulty = difficulty
-            self.statsManager = statsManager
-            self._path = path
-            self.playerProgressManager = playerProgressManager
-        }
-
+        )
+        self.difficulty = difficulty
+        self.statsManager = statsManager
+        self._path = path
+        self.playerProgressManager = playerProgressManager
+    }
+    
     // MARK: - Тело View
     var body: some View {
-        ZStack {
-            VStack {
-                //Сложность, время, жизни
-                GameHeaderView(
-                    difficulty: difficulty,
-                    timeElapsed: viewModel.elapsedTime,
-                    livesRemaining: viewModel.livesRemaining
-                )
+        ZStack(alignment: .top) {
+            BackgroundView() // ← наш фоновый рисунок (рандомный)
+                .ignoresSafeArea()
+            
+            GeometryReader { geo in
+                let gridSize = min(geo.size.width, geo.size.height * 0.6) // ✅ здесь можно
                 
-                //Игровое поле
-                GeometryReader { geo in
+                VStack {
+                    // ВЕРХНЯЯ ПАНЕЛЬ: сложность, время, жизни
+                    GameHeaderView(
+                        difficulty: difficulty,
+                        timeElapsed: viewModel.elapsedTime,
+                        livesRemaining: viewModel.livesRemaining
+                    )
+                    
+                    // ОСНОВНОЕ ИГРОВОЕ ПОЛЕ
                     GameBoardView(
                         cells: viewModel.board.cells,
                         highlightedValue: viewModel.highlightedValue,
@@ -57,23 +65,38 @@ struct GameView: View {
                         onCellTap: { row, col in viewModel.selectCell(row: row, col: col) },
                         geo: geo
                     )
-                }
-                HStack(spacing: 16) {
-                    NotesKeypadView { note in
-                        print("Заметка: \(note)")
-                        // viewModel.addNote(note) // ← сюда позже повесим обработку
-                    }
+                    .frame(width: gridSize, height: gridSize)
                     
-                    // Кнопочная панель
-                    KeypadView { number in
-                        viewModel.enterNumber(number)
+                    Spacer(minLength: 0)
+                    
+                    // НИЖНЯЯ ОБЛАСТЬ: клавиатуры
+                    HStack(alignment: .top, spacing: 16) {
+                        Spacer(minLength: 0)
+                        
+                        NotesKeypadView { note in
+                            viewModel.toggleNote(note)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        KeypadView(
+                            onNumberTap: { viewModel.enterNumber($0) },
+                            selectedValue: viewModel.selectedCellValue
+                        )
+                        .frame(maxWidth: .infinity)
+                        
+                        Spacer(minLength: 0)
                     }
+                    .frame(height: 180)
+                    .padding(.horizontal)
+                    .background(Color.white.opacity(0.1)) // ← только для отладки
                 }
+                .frame(maxHeight: .infinity)
+                .clipped()
             }
             
-            // MARK: - Реакция на окончание игры
+            // MARK: - Реакция на проигрыш
             .onChange(of: viewModel.isGameOver) { _, newValue in
-                print("🔥 isGameWon changed to \(newValue)")
+                print("🔥 isGameOver changed to \(newValue)")
                 if newValue {
                     let penalty = playerProgressManager.applyLossPenalty()
                     gainedXP = -Int(penalty)
@@ -87,6 +110,8 @@ struct GameView: View {
                     showLoseAlert = true
                 }
             }
+            
+            // MARK: - Реакция на победу
             .onChange(of: viewModel.isGameWon) { _, newValue in
                 print("🔥 isGameWon changed to \(newValue)")
                 if newValue {
@@ -107,25 +132,30 @@ struct GameView: View {
                 }
             }
             
-            GameAlertsView(
-                showWinAlert: $showWinAlert,
-                showLoseAlert: $showLoseAlert,
-                gainedXP: gainedXP,
-                elapsedTime: viewModel.elapsedTime,
-                flawless: viewModel.livesRemaining == difficulty.lives,
-                onRestart: restartGame,
-                onNewGame: { path.append(Route.difficulty) },
-                onStats: { path.append(Route.stats) },
-                onMenu: { path.removeLast(path.count) }
+            // АЛЕРТЫ победы/проигрыша
+            .overlay(
+                GameAlertsView(
+                    showWinAlert: $showWinAlert,
+                    showLoseAlert: $showLoseAlert,
+                    gainedXP: gainedXP,
+                    elapsedTime: viewModel.elapsedTime,
+                    flawless: viewModel.livesRemaining == difficulty.lives,
+                    onRestart: restartGame,
+                    onNewGame: { path.append(Route.difficulty) },
+                    onStats: { path.append(Route.stats) },
+                    onMenu: { path.removeLast(path.count) }
+                )
             )
             
             .padding()
             .navigationTitle("Игра")
             .navigationBarTitleDisplayMode(.inline)
+            .onDisappear {
+                viewModel.saveGame() // ← сохраняем прогресс при выходе
+            }
         }
     }
-
-    // MARK: - Метод перезапуска
+    // MARK: - Перезапуск игры
     private func restartGame() {
         viewModel.restartGame(with: difficulty)
     }
@@ -143,7 +173,7 @@ private func formatTime(_ seconds: TimeInterval) -> String {
     GameView(
         difficulty: .новичок,
         statsManager: StatsManager(),
-        playerProgressManager: PlayerProgressManager.shared, // ← ВАЖНО
+        playerProgressManager: PlayerProgressManager.shared,
         path: .constant(NavigationPath())
     )
 }

@@ -7,7 +7,9 @@
 import SwiftUI
 
 struct NotesKeypadView: View {
+    @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
     var onNoteTap: (Int) -> Void
+    
 
     private let numbers = [
         [1, 2, 3],
@@ -16,23 +18,23 @@ struct NotesKeypadView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) { // Вертикально: расстояние между строками
             ForEach(numbers, id: \.self) { row in
-                HStack(spacing: 4) {
+                HStack(spacing: 6) { // Горизонтально: расстояние между кнопками
                     ForEach(row, id: \.self) { number in
                         Button(action: {
                             onNoteTap(number)
                         }) {
                             Text("\(number)")
-                                .frame(width: 30, height: 30) // Меньше чем у основной
+                                .frame(width: 40, height: 40) // Меньше чем у основной
                                 .background(Color.gray.opacity(0.2))
-                                .cornerRadius(6)
+                                .cornerRadius(8)
                                 .font(.caption) // Меньший шрифт
                         }
                     }
                 }
             }
         }
-        .padding(.horizontal)
+        .padding(.top, 4)
     }
 }

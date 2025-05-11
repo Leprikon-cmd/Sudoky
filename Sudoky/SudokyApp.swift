@@ -12,14 +12,16 @@ enum Route: Hashable {
 struct SudokyApp: App {
     @StateObject var statsManager = StatsManager()
     @StateObject var settingsManager = SettingsManager()
+    @StateObject var fontManager = FontManager()
     @StateObject var playerProgressManager = PlayerProgressManager.shared
     @State private var path = NavigationPath()
-
+    
     var body: some Scene {
         WindowGroup {
             NavigationStack(path: $path) {
                 StartView(statsManager: statsManager, path: $path)
                     .environmentObject(playerProgressManager)
+                    .environmentObject(fontManager)
                     .navigationDestination(for: Route.self) { route in
                         switch route {
                         case .difficulty:

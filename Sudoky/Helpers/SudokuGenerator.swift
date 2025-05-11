@@ -57,10 +57,10 @@ struct SudokuGenerator {
         let cellsToRemove: Int
         switch difficulty {
         case .новичок: cellsToRemove = 1 //Для тестов
-        case .ученик:  cellsToRemove = 40
-        case .мастер:  cellsToRemove = 50
-        case .сенсей:  cellsToRemove = 60
-        case .dokushin:  cellsToRemove = 60
+        case .ученик:  cellsToRemove = 38
+        case .мастер:  cellsToRemove = 46
+        case .сенсей:  cellsToRemove = 54
+        case .dokushin:  cellsToRemove = 54
         }
 
         var attempts = 0
