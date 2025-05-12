@@ -14,6 +14,7 @@ struct BackgroundView: View {
             Image(imageName)
                 .resizable()
                 .scaledToFill()
+                .scaleEffect(1.2) // ← увеличивает изображение
                 .frame(width: geo.size.width, height: geo.size.height)
                 .clipped()
                 .ignoresSafeArea()

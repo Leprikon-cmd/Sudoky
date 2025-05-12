@@ -13,7 +13,31 @@ class FontManager: ObservableObject {
 
     @AppStorage("selectedFont") private var selectedFont: String = "system"
 
-    /// Возвращает нужный шрифт с заданным размером
+    // Список доступных шрифтов (для Picker)
+    let availableFonts: [String] = [
+        "system",
+        "Pacifico",
+        "CormorantGaramond",
+        "Medieval",
+        "OldStandard",
+        "RuslanDisplay",
+        "ShareTech"
+    ]
+
+    // Отдаёт имя выбранного шрифта
+    var selectedFontName: String {
+        selectedFont
+    }
+
+    // Основная функция — отдает стилизованный Text с учётом шрифта и offset
+    func styledText(_ string: String, size: CGFloat) -> some View {
+        let offset = offset(for: selectedFont)
+        return Text(string)
+            .font(font(size: size))
+            .offset(offset)
+    }
+
+    // Сам шрифт по имени
     func font(size: CGFloat) -> Font {
         switch selectedFont {
         case "Pacifico":
@@ -32,5 +56,17 @@ class FontManager: ObservableObject {
             return Font.system(size: size)
         }
     }
-}
 
+    // Смещения для конкретных шрифтов
+    func offset(for font: String) -> CGSize {
+        switch font {
+        case "Pacifico": return CGSize(width: 0, height: -3)
+        case "OldStandard": return CGSize(width: 0, height: 2)
+        case "Medieval": return CGSize(width: 0, height: 1)
+        case "RuslanDisplay": return CGSize(width: 0, height: -2)
+        case "ShareTech": return CGSize(width: 0, height: 0)
+        case "CormorantGaramond": return CGSize(width: 0, height: -3)
+        default: return .zero
+        }
+    }
+}

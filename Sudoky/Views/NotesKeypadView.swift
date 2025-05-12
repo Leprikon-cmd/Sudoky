@@ -26,10 +26,11 @@ struct NotesKeypadView: View {
                             onNoteTap(number)
                         }) {
                             Text("\(number)")
+                                .foregroundColor((Color("ButtonPrimary")))
                                 .frame(width: 40, height: 40) // Меньше чем у основной
-                                .background(Color.gray.opacity(0.2))
+                                .background(Color("CellBackground").opacity(0.8))
                                 .cornerRadius(8)
-                                .font(.caption) // Меньший шрифт
+                                .font(fontManager.font(size: 14)) // Размер и стиль шрифта.
                         }
                     }
                 }

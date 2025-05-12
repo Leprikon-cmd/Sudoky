@@ -34,8 +34,8 @@ struct DifficultyPickerView: View {
                     path.append(Route.game(difficulty))
                 }) {
                     Text(difficulty.rawValue.capitalized)
-                        .font(.custom("Pacifico", size: 24))                    // ← Размер шрифта
-                        .foregroundColor(.primary)        // ← Цвет текста (адаптивный)
+                        .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
+                        .foregroundColor((Color("ButtonPrimary")))        // ← Цвет текста (адаптивный)
                         .frame(maxWidth: .infinity)       // ← Центрируем по ширине
                         .multilineTextAlignment(.center)  // ← Центрируем текст
                         .padding()

@@ -13,7 +13,21 @@ struct StartView: View {
         ZStack(alignment: .top) {
             BackgroundView() // ← всё сделает сам
                 .ignoresSafeArea()
-    
+            
+            // Кнопка настроек
+            HStack {
+                Spacer()
+                Button(action: {
+                    path.append(Route.settings)
+                }) {
+                    Text("📜") // или "⚙️", "📜", "🔧", "🎛", "🧘"
+                        .font(.system(size: 28))
+                        .padding(12)                          // ← отступ внутри "круга"
+                        .background(Color.white.opacity(0.2)) // ← фон кнопки
+                        .clipShape(Circle())                  // ← форма — круг
+                }
+                .padding(.trailing) // отступ справа
+            }
             
             VStack() {
                 
@@ -42,24 +56,22 @@ struct StartView: View {
                 // Отступ снизу от следующего элемента
                 .padding(.bottom, 10) // ← Отступ вниз. Если снизу элемент прилипает — увеличь.
                 
-                // Аватар мудреца (заглушка)
-                Rectangle()
-                    .fill(Color.white.opacity(0.2))
-                    .frame(width: 100, height: 100)
-                    .cornerRadius(16)
-                    .overlay(
-                        Text("🧘")
-                            .font(.largeTitle)
-                    )
+                // Аватар мудреца (теперь из ассетов)
+                Image("sage_avatar_01") // ← имя изображения в Assets
+                    .resizable()                        // даёт возможность масштабировать
+                    .scaledToFit()                      // сохраняет пропорции
+                    .frame(width: 200, height: 200)     // ← можно регулировать размер
+                    .cornerRadius(16)                   // скруглённые углы
+                    .shadow(radius: 5)                  // мягкая тень для объёма
                 
                 // Уровень и имя
                 Text("Уровень \(playerProgress.currentLevel)")
-                    .font(fontManager.font(size: 12)) // Размер и стиль шрифта.
+                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
                     .foregroundColor(.white)
                 
                 // Уровень и прогресс
                 Text("Уровень: \(playerProgress.currentLevel)")
-                    .font(fontManager.font(size: 12)) // Размер и стиль шрифта.
+                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
                 
                 ProgressView(
                     value: progressPercent(),
@@ -69,54 +81,39 @@ struct StartView: View {
                 .frame(width: 200)
                 
                 Text(String(format: "%.0f / %.0f XP", playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()), xpForNext()))
-                    .font(fontManager.font(size: 12)) // Размер и стиль шрифта.
+                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
                     .foregroundColor(.gray)
 
                 // Кнопки
-                Button("🧩 Новый Путь") {
+                Button("🐉 Новый Путь") {
                     path.append(Route.difficulty)
                 }
-                .buttonStyle(.borderedProminent)
-                .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
+                .buttonStyle(.bordered)
+                .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
 
-                Button("📜 Уровни познания") {
+                Button("📋 Уровни познания") {
                     path.append(Route.stats)
                 }
                 .buttonStyle(.bordered)
-                .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
+                .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
 
                 if hasSave {
-                    Button("🛤 Продолжить путь") {
-                        path.append(Route.resume)
-                    }
-                    .buttonStyle(.bordered)
-                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
+                Button("🐲 Продолжить путь") {
+                    path.append(Route.resume)
                 }
-
+                .buttonStyle(.bordered)
+                .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
+                }
+                
                 Spacer()
+
             }
             .frame(maxWidth: .infinity, alignment: .center) // Выравнивание по центру
-            .padding()
-
-            // Кнопка настроек
-            Button(action: {
-                path.append(Route.settings)
-            }) {
-                Image(systemName: "book.fill")
-                    .padding(12)
-                    .background(Color.white.opacity(0.2))
-                    .clipShape(Circle())
-            }
+            .tint(Color("ButtonPrimary"))
             .padding()
         }
         .onAppear {
             hasSave = hasSavedGame()
-            for family in UIFont.familyNames.sorted() {
-                    print("🔤 \(family)")
-                    for name in UIFont.fontNames(forFamilyName: family) {
-                        print("   👉 \(name)")
-                    }
-                }
             }
         }
 
