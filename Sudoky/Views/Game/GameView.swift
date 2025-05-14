@@ -41,65 +41,54 @@ struct GameView: View {
     
     // MARK: - Тело View
     var body: some View {
-            ZStack {
-                BackgroundView()
-                    .ignoresSafeArea()
-
-                GeometryReader { geo in
-                    let screenWidth = UIScreen.main.bounds.width
-                    let frameThickness: CGFloat = 18
-                    let gridSize = screenWidth - frameThickness * 2
-
-                    
-                    VStack {
-                        // 🔝 Верхняя панель
-                        GameHeaderView(
-                            difficulty: difficulty,
-                            timeElapsed: viewModel.elapsedTime,
-                            livesRemaining: viewModel.livesRemaining
-                        )
-
-                        // 🎮 Игровое поле
-                        HStack {
-                            Spacer(minLength: 0)
-
-                            GameBoardView(
-                                cells: viewModel.board.cells,
-                                highlightedValue: viewModel.highlightedValue,
-                                highlightEnabled: viewModel.highlightIdenticals,
-                                showErrors: viewModel.showErrors,
-                                onCellTap: { row, col in viewModel.selectCell(row: row, col: col) },
-                                gridSize: gridSize
-                            )
-                            .fixedSize() // ❗️важно, чтобы не сжималось
-                            .frame(width: gridSize)
-
-                            Spacer(minLength: 0)
-                        }
-
-                        Spacer(minLength: 0)
-
-                        // ⌨️ Клавиатура
-                        HStack(alignment: .top, spacing: 0) {
-                            Spacer(minLength: 0)
-
-                            NotesKeypadView { note in viewModel.toggleNote(note) }
-                                .frame(maxWidth: .infinity)
-
-                            KeypadView(
-                                onNumberTap: { viewModel.enterNumber($0) },
-                                selectedValue: viewModel.selectedCellValue
-                            )
-                            .frame(maxWidth: .infinity)
-
-                            Spacer(minLength: 0)
-                        }
-                        .frame(height: 180)
-                        .background(Color.white.opacity(0.1))
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                }
+        ZStack {
+            BackgroundView()
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // 🔝 Верхняя панель
+                GameHeaderView(
+                    difficulty: difficulty,
+                    timeElapsed: viewModel.elapsedTime,
+                    livesRemaining: viewModel.livesRemaining
+                )
                 
+                // 🔽 Отступ после панели
+                Spacer(minLength: 16)
+                
+                // 🎮 Игровое поле
+                GameBoardView(
+                    cells: viewModel.board.cells,
+                    highlightedValue: viewModel.highlightedValue,
+                    highlightEnabled: viewModel.highlightIdenticals,
+                    showErrors: viewModel.showErrors,
+                    onCellTap: { row, col in viewModel.selectCell(row: row, col: col) }
+                )
+                .aspectRatio(1, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                
+                // 🔽 Отступ после поля
+                Spacer(minLength: 16)
+                
+                // ⌨️ Клавиатура
+                HStack(alignment: .top, spacing: 16) {
+                    NotesKeypadView { note in viewModel.toggleNote(note) }
+                        .frame(maxWidth: .infinity)
+                    
+                    KeypadView(
+                        onNumberTap: { viewModel.enterNumber($0) },
+                        selectedValue: viewModel.selectedCellValue
+                    )
+                    .frame(maxWidth: .infinity)
+                }
+                .frame(height: 180)
+                .padding(.horizontal)
+                
+                // 🔚 Отступ снизу для iPad / iPhone
+                Spacer(minLength: 16)
+            }
+            .padding(.top, 16)
             
             // MARK: - Реакция на проигрыш
             .onChange(of: viewModel.isGameOver) { _, newValue in
