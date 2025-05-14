@@ -1,8 +1,8 @@
+//
 //  CellView.swift
 //  Отвечает за внешний вид ячейки
 //  Sudoky
 //
-//  Created by Евгений Зотчик on 09.05.2025.
 
 import SwiftUI
 
@@ -15,6 +15,13 @@ struct CellView: View {
     let highlightedValue: Int?
     let showErrors: Bool
 
+    @State private var strokeName: String = ""    // Имя текущего мазка
+    @State private var showBrush: Bool = false    // Показывать мазок или нет
+
+    private static var picker = StrokeImagePicker() // Общий выбор обводок
+
+    // MARK: - Вычисления
+
     /// Подсветка ячеек с совпадающим значением (если включена)
     var isHighlighted: Bool {
         highlightedValue != nil && highlightedValue == cell.value && cell.value != 0
@@ -24,62 +31,95 @@ struct CellView: View {
     var isError: Bool {
         showErrors && cell.hasError
     }
-    
-    func strokeImageName(for value: Int) -> String? {
-        guard value >= 1 && value <= 9 else { return nil }
-        return "brush_stroke_\(value)"
-    }
+
+    // MARK: - Основное тело ячейки
 
     var body: some View {
         ZStack {
-            
-            // Фон ячейки с приоритетом: выбрана → ошибка → совпадение → обычная
+            // 🟫 Фон ячейки (настраивается в Assets)
             Rectangle()
-                .fill(
-                    isError ?
-                        Color("ErrorCellColor") :                      // Подсветка ошибки
-                        Color("CellBackground")                        // Обычный фон
-                )
-            // Мазок кисти при выделении или подсветке
+                .fill(isError ? Color("ErrorCellColor") : Color("CellBackground"))
+
+            // 🎨 Мазок кисти при выделении
             if cell.isSelected || isHighlighted {
-                if let imageName = strokeImageName(for: cell.value) {
-                    Image(imageName)
+                if !strokeName.isEmpty {
+                    Image(strokeName)
                         .resizable()
                         .scaledToFit()
-                        .scaleEffect(1.3) // Размер мазка: увеличивает, но не чрезмерно
-                        .opacity(0.5)     // Полупрозрачный
-                        .frame(width: cellSize, height: cellSize) // Ограничим область
-                        .transition(.opacity)
-                        .animation(.easeInOut(duration: 0.2), value: cell.isSelected || isHighlighted)
+                        .frame(width: cellSize, height: cellSize)
+                        .opacity(showBrush ? 0.8 : 0) // 🔧 Прозрачность мазка при появлении
+                        .onAppear {
+                            // Генерация мазка и анимация
+                            if strokeName.isEmpty {
+                                strokeName = Self.picker.next()
+                            }
+                            withAnimation(.easeOut(duration: 0.9)) {
+                                showBrush = true
+                            }
+                        }
+                } else {
+                    // Случай, когда мазок ещё не назначен
+                    Color.clear
+                        .frame(width: cellSize, height: cellSize)
+                        .onAppear {
+                            strokeName = Self.picker.next()
+                            withAnimation(.easeOut(duration: 0.9)) { // 🔧 Длительность и стиль анимации
+                                showBrush = true
+                            }
+                        }
                 }
             }
-            
-            // Если в ячейке есть основное число — отображаем его
+
+            // 🔢 Основное число
             if cell.value != 0 {
-                
-                fontManager.styledText("\(cell.value)", size: cellSize * 0.8)
-                    .foregroundColor(cell.isEditable ? (Color("ButtonPrimary")) : .black)
-                    .frame(width: cellSize, height: cellSize)
-                    
+                fontManager.styledText("\(cell.value)", size: cellSize * 0.8) // 🔧 Размер шрифта
+                    .foregroundColor(cell.isEditable ? Color("ButtonPrimary") : .black) // 🔧 Цвет числа
+                    .frame(width: cellSize, height: cellSize, alignment: .center)
             }
-            // Если число не задано (0), но есть заметки — отрисовываем мини-сетку
+
+            // ✏️ Заметки в пустой ячейке
             else if !cell.notes.isEmpty {
-                VStack(spacing: 1) { // ← вертикальный стек из 3 строк
+                VStack(spacing: 1) { // 🔧 Межстрочный отступ мини-сетки
                     ForEach(0..<3) { row in
-                        HStack(spacing: 1) { // ← горизонтальный стек из 3 ячеек
+                        HStack(spacing: 1) {
                             ForEach(1..<4) { col in
-                                let noteValue = row * 3 + col // ← пересчёт в значение от 1 до 9
+                                let noteValue = row * 3 + col
                                 Text(cell.notes.contains(noteValue) ? "\(noteValue)" : "")
-                                    .font(.system(size: cellSize * 0.3)) // ← размер мини-цифр
-                                    .frame(width: cellSize / 3, height: cellSize / 3) // ← равномерно распределяем
-                                    .foregroundColor(.gray) // ← серый цвет — как будто карандашом
+                                    .font(.system(size: cellSize * 0.3)) // 🔧 Размер шрифта заметок
+                                    .frame(width: cellSize / 3, height: cellSize / 3)
+                                    .foregroundColor(.gray) // 🔧 Цвет заметок
                             }
                         }
                     }
                 }
             }
         }
-        // Размер всей ячейки
+        .onChange(of: cell.isSelected) { _, _ in
+            handleBrushChange()
+        }
+        .onChange(of: isHighlighted) { _, _ in
+            handleBrushChange()
+        }
         .frame(width: cellSize, height: cellSize)
+    }
+
+    // MARK: - Управление мазком
+    private func handleBrushChange() {
+        if !(cell.isSelected || isHighlighted) {
+            showBrush = false
+            strokeName = ""
+        }
+    }
+
+    // MARK: - Генератор случайных мазков
+    class StrokeImagePicker {
+        private var available = Array(1...13).shuffled()
+
+        func next() -> String {
+            if available.isEmpty {
+                available = Array(1...13).shuffled()
+            }
+            return "brush_stroke_\(available.removeFirst())"
+        }
     }
 }

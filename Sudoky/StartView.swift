@@ -60,7 +60,7 @@ struct StartView: View {
                 Image("sage_avatar_01") // ← имя изображения в Assets
                     .resizable()                        // даёт возможность масштабировать
                     .scaledToFit()                      // сохраняет пропорции
-                    .frame(width: 200, height: 200)     // ← можно регулировать размер
+                    .frame(width: 200, height: 200)     // можно регулировать размер
                     .cornerRadius(16)                   // скруглённые углы
                     .shadow(radius: 5)                  // мягкая тень для объёма
                 

@@ -41,58 +41,65 @@ struct GameView: View {
     
     // MARK: - Тело View
     var body: some View {
-        ZStack(alignment: .top) {
-            BackgroundView() // ← наш фоновый рисунок (рандомный)
-                .ignoresSafeArea()
-            
-            GeometryReader { geo in
-                let gridSize = min(geo.size.width, geo.size.height * 0.6) // ✅ здесь можно
-                
-                VStack {
-                    // ВЕРХНЯЯ ПАНЕЛЬ: сложность, время, жизни
-                    GameHeaderView(
-                        difficulty: difficulty,
-                        timeElapsed: viewModel.elapsedTime,
-                        livesRemaining: viewModel.livesRemaining
-                    )
+            ZStack {
+                BackgroundView()
+                    .ignoresSafeArea()
+
+                GeometryReader { geo in
+                    let screenWidth = UIScreen.main.bounds.width
+                    let frameThickness: CGFloat = 18
+                    let gridSize = screenWidth - frameThickness * 2
+
                     
-                    // ОСНОВНОЕ ИГРОВОЕ ПОЛЕ
-                    GameBoardView(
-                        cells: viewModel.board.cells,
-                        highlightedValue: viewModel.highlightedValue,
-                        highlightEnabled: viewModel.highlightIdenticals,
-                        showErrors: viewModel.showErrors,
-                        onCellTap: { row, col in viewModel.selectCell(row: row, col: col) },
-                        geo: geo
-                    )
-                    .frame(width: gridSize, height: gridSize)
-                    
-                    Spacer(minLength: 0)
-                    
-                    // НИЖНЯЯ ОБЛАСТЬ: клавиатуры
-                    HStack(alignment: .top, spacing: 16) {
-                        Spacer(minLength: 0)
-                        
-                        NotesKeypadView { note in
-                            viewModel.toggleNote(note)
-                        }
-                        .frame(maxWidth: .infinity)
-                        
-                        KeypadView(
-                            onNumberTap: { viewModel.enterNumber($0) },
-                            selectedValue: viewModel.selectedCellValue
+                    VStack {
+                        // 🔝 Верхняя панель
+                        GameHeaderView(
+                            difficulty: difficulty,
+                            timeElapsed: viewModel.elapsedTime,
+                            livesRemaining: viewModel.livesRemaining
                         )
-                        .frame(maxWidth: .infinity)
-                        
+
+                        // 🎮 Игровое поле
+                        HStack {
+                            Spacer(minLength: 0)
+
+                            GameBoardView(
+                                cells: viewModel.board.cells,
+                                highlightedValue: viewModel.highlightedValue,
+                                highlightEnabled: viewModel.highlightIdenticals,
+                                showErrors: viewModel.showErrors,
+                                onCellTap: { row, col in viewModel.selectCell(row: row, col: col) },
+                                gridSize: gridSize
+                            )
+                            .fixedSize() // ❗️важно, чтобы не сжималось
+                            .frame(width: gridSize)
+
+                            Spacer(minLength: 0)
+                        }
+
                         Spacer(minLength: 0)
+
+                        // ⌨️ Клавиатура
+                        HStack(alignment: .top, spacing: 0) {
+                            Spacer(minLength: 0)
+
+                            NotesKeypadView { note in viewModel.toggleNote(note) }
+                                .frame(maxWidth: .infinity)
+
+                            KeypadView(
+                                onNumberTap: { viewModel.enterNumber($0) },
+                                selectedValue: viewModel.selectedCellValue
+                            )
+                            .frame(maxWidth: .infinity)
+
+                            Spacer(minLength: 0)
+                        }
+                        .frame(height: 180)
+                        .background(Color.white.opacity(0.1))
                     }
-                    .frame(height: 180)
-                    .padding(.horizontal)
-                    .background(Color.white.opacity(0.1)) // ← только для отладки
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
-                .frame(maxHeight: .infinity)
-                .clipped()
-            }
+                
             
             // MARK: - Реакция на проигрыш
             .onChange(of: viewModel.isGameOver) { _, newValue in
@@ -149,6 +156,7 @@ struct GameView: View {
             
             .padding()
             .navigationTitle("Игра")
+            .tint(Color("ButtonPrimary"))
             .navigationBarTitleDisplayMode(.inline)
             .onDisappear {
                 viewModel.saveGame() // ← сохраняем прогресс при выходе
