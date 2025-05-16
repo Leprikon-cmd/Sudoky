@@ -30,12 +30,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		275BD2F72DD0BE3B0014413F /* Exceptions for "Sudoky" folder in "Sudoky" target */ = {
+		2772FB852DD7501200929C79 /* Exceptions for "Sudoky" folder in "SudokyTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				"/Localized: Info.plist",
 			);
-			target = 275BD0E42DCE05C70014413F /* Sudoky */;
+			target = 275BD0F12DCE05CB0014413F /* SudokyTests */;
+		};
+		2772FB862DD7501200929C79 /* Exceptions for "Sudoky" folder in "SudokyUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized: Info.plist",
+			);
+			target = 275BD0FB2DCE05CB0014413F /* SudokyUITests */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -43,7 +50,8 @@
 		275BD0E72DCE05C80014413F /* Sudoky */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				275BD2F72DD0BE3B0014413F /* Exceptions for "Sudoky" folder in "Sudoky" target */,
+				2772FB852DD7501200929C79 /* Exceptions for "Sudoky" folder in "SudokyTests" target */,
+				2772FB862DD7501200929C79 /* Exceptions for "Sudoky" folder in "SudokyUITests" target */,
 			);
 			path = Sudoky;
 			sourceTree = "<group>";
@@ -205,6 +213,11 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
+				de,
+				fr,
+				es,
+				be,
 			);
 			mainGroup = 275BD0DC2DCE05C70014413F;
 			minimizedProjectReferenceProxies = 1;
@@ -343,6 +356,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -401,6 +415,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -415,7 +430,7 @@
 				DEVELOPMENT_TEAM = 73P89VLQ3W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Sudoky/Info.plist;
+				INFOPLIST_FILE = "/Users/ez/Desktop/Судоку/Sudoky/Sudoky/Sudoky/Base.lproj/info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -445,7 +460,7 @@
 				DEVELOPMENT_TEAM = 73P89VLQ3W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Sudoky/Info.plist;
+				INFOPLIST_FILE = "/Users/ez/Desktop/Судоку/Sudoky/Sudoky/Sudoky/Base.lproj/info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

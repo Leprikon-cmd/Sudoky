@@ -10,14 +10,15 @@ struct GameHeaderView: View {
     let difficulty: Difficulty        // ← уровень сложности
     let timeElapsed: TimeInterval    // ← сколько прошло времени
     let livesRemaining: Int          // ← сколько осталось жизней
+    @EnvironmentObject var languageManager: LanguageManager // Локализация
 
     var body: some View {
         VStack(spacing: 4) {
-            // Название сложности
-            Text("Сложность: \(difficulty.rawValue.capitalized)")
+            // + Сложность (в формате "Сложность: Мастер" / "Difficulty: Master")
+            Text(String(format: loc("header.difficulty"), difficulty.localizedName))
                 .font(.headline)
 
-            // Сердечки (жизни)
+            // + Жизни (❤️)
             HStack(spacing: 4) {
                 ForEach(0..<livesRemaining, id: \.self) { _ in
                     Image(systemName: "heart.fill")
@@ -25,8 +26,8 @@ struct GameHeaderView: View {
                 }
             }
 
-            // Время
-            Text("Время: \(Int(timeElapsed)) сек")
+            // + Таймер в секундах
+            Text(String(format: loc("header.time"), Int(timeElapsed)))
                 .font(.subheadline)
         }
         .padding(.bottom, 8)

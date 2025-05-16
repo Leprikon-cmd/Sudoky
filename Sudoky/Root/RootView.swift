@@ -20,6 +20,7 @@ struct RootView: View {
     @StateObject var settingsManager = SettingsManager()
     @StateObject var fontManager = FontManager.shared
     @StateObject var playerProgressManager = PlayerProgressManager.shared
+    @StateObject private var languageManager = LanguageManager()
 
     @State private var path = NavigationPath()
 
@@ -64,6 +65,7 @@ struct RootView: View {
         .environmentObject(settingsManager)
         .environmentObject(fontManager)
         .environmentObject(playerProgressManager)
+        .environmentObject(languageManager) // ✅ Передаём язык глобально
     }
 }
 

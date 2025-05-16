@@ -9,6 +9,8 @@ struct GameView: View {
     let playerProgressManager: PlayerProgressManager  // Менеджер игрока
     @Binding var path: NavigationPath                 // Навигационный стек
     @EnvironmentObject var fontManager: FontManager   // Менеджер шрифтов
+    @EnvironmentObject var languageManager: LanguageManager // Локализация
+
     
     @StateObject private var viewModel: SudokuViewModel   // ViewModel игры
     @State private var showWinAlert = false               // Показывать алерт победы?
@@ -144,7 +146,7 @@ struct GameView: View {
             )
             
             .padding()
-            .navigationTitle("Игра")
+            .navigationTitle(loc("game.title"))
             .tint(Color("ButtonPrimary"))
             .navigationBarTitleDisplayMode(.inline)
             .onDisappear {

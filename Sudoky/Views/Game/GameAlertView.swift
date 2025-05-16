@@ -16,26 +16,27 @@ struct GameAlertsView: View {
     let onNewGame: () -> Void
     let onStats: () -> Void
     let onMenu: () -> Void
+    @EnvironmentObject var languageManager: LanguageManager // Локализация
 
     var body: some View {
         // Заглушка, чтобы SwiftUI не выкинул View
         Color.clear
-            .alert("Ты проиграл!", isPresented: showLoseAlert) {
-                Button("Заново", action: onRestart)
-                Button("Новая игра", action: onNewGame)
-                Button("Статистика", action: onStats)
-                Button("Меню", action: onMenu)
+            .alert(loc("alert.lose.title"), isPresented: showLoseAlert) {
+                Button(loc("alert.restart"), action: onRestart)
+                Button(loc("alert.newGame"), action: onNewGame)
+                Button(loc("alert.stats"), action: onStats)
+                Button(loc("alert.menu"), action: onMenu)
             } message: {
-                Text("Все жизни закончились… ты потерял \(abs(gainedXP)) XP")
+                Text(String(format: loc("alert.lose.message"), abs(gainedXP)))
             }
 
-            .alert("Победа!", isPresented: showWinAlert) {
-                Button("Заново", action: onRestart)
-                Button("Новая игра", action: onNewGame)
-                Button("Статистика", action: onStats)
-                Button("Меню", action: onMenu)
+            .alert(loc("alert.win.title"), isPresented: showWinAlert) {
+                Button(loc("alert.restart"), action: onRestart)
+                Button(loc("alert.newGame"), action: onNewGame)
+                Button(loc("alert.stats"), action: onStats)
+                Button(loc("alert.menu"), action: onMenu)
             } message: {
-                Text("Ты победил за \(formatTime(elapsedTime)) и получил \(gainedXP) XP")
+                Text(String(format: loc("alert.win.message"), formatTime(elapsedTime), gainedXP))
             }
     }
 

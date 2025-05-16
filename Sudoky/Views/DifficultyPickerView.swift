@@ -5,8 +5,11 @@ enum Difficulty: String, CaseIterable, Identifiable, Codable {
     case новичок, ученик, мастер, сенсей, dokushin
     
     var id: String { self.rawValue }
-    
-    /// Количество жизней в зависимости от уровня
+
+    var localizedName: String {
+        loc("difficulty.\(self.rawValue)") // ✅ Единый универсальный ключ
+    }
+
     var lives: Int {
         switch self {
         case .новичок: return 10
@@ -23,17 +26,21 @@ struct DifficultyPickerView: View {
     let statsManager: StatsManager
     @Binding var path: NavigationPath
     @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
+    @EnvironmentObject var languageManager: LanguageManager // Локализация
 
     var body: some View {
         ZStack(alignment: .top) {
             BackgroundView() // ← наш фоновый рисунок (рандомный)
                 .ignoresSafeArea()
+            
+            // ⬇️ ТРИГГЕР НА ПЕРЕРИСОВКУ
+                    let _ = languageManager.language // ++ Обновит View при смене языка
 
             List(Difficulty.allCases) { difficulty in
                 Button(action: {
                     path.append(Route.game(difficulty))
                 }) {
-                    Text(difficulty.rawValue.capitalized)
+                    Text(difficulty.localizedName) // ++ Локализованное название уровня
                         .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
                         .foregroundColor((Color("ButtonPrimary")))        // ← Цвет текста (адаптивный)
                         .frame(maxWidth: .infinity)       // ← Центрируем по ширине
@@ -48,7 +55,7 @@ struct DifficultyPickerView: View {
             }
             .scrollContentBackground(.hidden)             // ← Убираем фон всего списка
             .background(Color.clear)                      // ← Подстраховка
-            .navigationTitle("Выбор сложности")
+            .navigationTitle(loc("difficulty.title")) // ++ Локализованный заголовок
         }
     }
 }

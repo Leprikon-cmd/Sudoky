@@ -6,7 +6,7 @@ struct StartView: View {
     @AppStorage("playerMotto") private var playerMotto: String = ""
     @State private var hasSave: Bool = false
     @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
-
+    @EnvironmentObject var languageManager: LanguageManager // Локализация
     @EnvironmentObject var playerProgress: PlayerProgressManager
 
     var body: some View {
@@ -45,7 +45,7 @@ struct StartView: View {
                         )
                 .shadow(radius: 3) // ← Мягкая тень под блоком. Radius = 3 делает лёгкий объём. Увеличь — будет сильнее «всплывать».
                 // Поле ввода текста внутри облачка
-                TextField("Впиши свою мудрость...", text: $playerMotto)
+                    TextField(loc("start.placeholder.motto"), text: $playerMotto)
                         .padding() // ← Внутренний отступ текста от краёв рамки. Стандартное значение (обычно 16)
                         .foregroundColor(.black) // ← Цвет вводимого текста
                         .multilineTextAlignment(.leading) // ← Текст будет выравниваться по левому краю
@@ -64,45 +64,52 @@ struct StartView: View {
                     .cornerRadius(16)                   // скруглённые углы
                     .shadow(radius: 5)                  // мягкая тень для объёма
                 
-                // Уровень и имя
-                Text("Уровень \(playerProgress.currentLevel)")
-                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
+                // Уровень (короткий)
+                Text(String(format: loc("start.levelShort"), playerProgress.currentLevel))
+                    .font(fontManager.font(size: 16))
                     .foregroundColor(.white)
-                
-                // Уровень и прогресс
-                Text("Уровень: \(playerProgress.currentLevel)")
-                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
-                
+
+                // Уровень: N
+                Text(String(format: loc("start.levelLong"), playerProgress.currentLevel))
+                    .font(fontManager.font(size: 16))
+
+                // Прогресс
                 ProgressView(
                     value: progressPercent(),
                     total: 1.0
                 )
                 .progressViewStyle(LinearProgressViewStyle(tint: .green))
                 .frame(width: 200)
-                
-                Text(String(format: "%.0f / %.0f XP", playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()), xpForNext()))
-                    .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
-                    .foregroundColor(.gray)
 
-                // Кнопки
-                Button("🐉 Новый Путь") {
+                // Текущий XP / нужный XP
+                Text(String(format: loc("start.xpProgress"),
+                    playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()),
+                    xpForNext()
+                ))
+                .font(fontManager.font(size: 16))
+                .foregroundColor(.gray)
+
+                // Кнопка — начать новую игру
+                Button(loc("start.newGame")) {
                     path.append(Route.difficulty)
                 }
                 .buttonStyle(.bordered)
-                .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
+                .font(fontManager.font(size: 24))
 
-                Button("📋 Уровни познания") {
+                // Кнопка — статистика
+                Button(loc("start.stats")) {
                     path.append(Route.stats)
                 }
                 .buttonStyle(.bordered)
-                .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
+                .font(fontManager.font(size: 24))
 
+                // Кнопка — продолжить
                 if hasSave {
-                Button("🐲 Продолжить путь") {
-                    path.append(Route.resume)
-                }
-                .buttonStyle(.bordered)
-                .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
+                    Button(loc("start.resume")) {
+                        path.append(Route.resume)
+                    }
+                    .buttonStyle(.bordered)
+                    .font(fontManager.font(size: 24))
                 }
                 
                 Spacer()
