@@ -50,7 +50,7 @@ struct StartView: View {
                             .padding()
                             .foregroundColor(.black)
                             .multilineTextAlignment(.leading)
-                            .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
+                            .textStyle(size: 16) // Размер и стиль шрифта.
                     }
                     .frame(maxWidth: 300, minHeight: 20, maxHeight: 50)
                     .padding(.bottom, 6)
@@ -64,13 +64,20 @@ struct StartView: View {
                         .shadow(radius: 5)
                     
                     
-                    // 💬 Имя и уровень — объединены в одну строку
-                    Text("\(playerName) — \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
-                        .textStyle(size: 20)
-                        .multilineTextAlignment(.center)
+                    // 💬 Имя и уровень — имя вводится, уровень отображается справа
+                    HStack(spacing: 4) {
+                        TextField(loc("start.enterName"), text: $playerName)
+                            .textStyle(size: 20)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 200) // 🔧 Ширина поля для имени
+
+                        Text("— \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
+                            .textStyle(size: 20)
+                    }
+                    .multilineTextAlignment(.center)
                     
                     // ✅ Прогрессбар (путь мудреца)
-                    ProgressView(value: progressPercent(), total: 1.0) // передаём текущий и максимальный прогресс
+                    ProgressView(value: progressPercent(), total: 1) // передаём текущий и максимальный прогресс
                         .progressViewStyle(
                             LinearProgressViewStyle(tint: .green) // Цвет индикатора (зелёный)
                         )
@@ -82,7 +89,7 @@ struct StartView: View {
                                 playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()),
                                 xpForNext()
                                ))
-                    .font(fontManager.font(size: 16))
+                    .textStyle(size: 16)
                     .foregroundColor(.gray)
                     
                     // Кнопки — одинаковая ширина

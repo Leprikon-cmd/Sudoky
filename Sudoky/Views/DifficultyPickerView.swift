@@ -48,7 +48,7 @@ struct DifficultyPickerView: View {
             
             VStack(spacing: 16) {
                 Text(loc("difficulty.title"))
-                    .font(fontManager.font(size: 30))
+                    .textStyle(size: 30)
                     .padding(.top, 40) // отступ
                     .foregroundColor(Color("ButtonPrimary"))
 
@@ -57,8 +57,7 @@ struct DifficultyPickerView: View {
                     path.append(Route.game(difficulty))
                 }) {
                     Text(difficulty.localizedName) // ++ Локализованное название уровня
-                        .font(fontManager.font(size: 24)) // Размер и стиль шрифта.
-                        .foregroundColor((Color("ButtonPrimary")))        // ← Цвет текста (адаптивный)
+                        .textStyle(size: 24)      // ← Цвет текста (адаптивный)
                         .frame(maxWidth: .infinity)       // ← Центрируем по ширине
                         .multilineTextAlignment(.center)  // ← Центрируем текст
                         .padding()

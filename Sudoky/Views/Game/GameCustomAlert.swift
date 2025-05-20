@@ -33,14 +33,12 @@ struct GameCustomAlert: View {
 
                 VStack(spacing: 16) {
                     Text(title)
-                        .foregroundColor(.black) // или другой подходящий
-                        .font(fontManager.font(size: 20))
+                        .textStyle(size: 20) // Размер, стиль и цвет шрифта.
                         .bold()
                         .multilineTextAlignment(.center)
 
                     Text(message)
-                        .foregroundColor(.black) // или другой подходящий
-                        .font(fontManager.font(size: 16))
+                        .textStyle(size: 16) // Размер, стиль и цвет шрифта.
                         .multilineTextAlignment(.center)
 
                     VStack(spacing: 8) {
@@ -53,8 +51,7 @@ struct GameCustomAlert: View {
                                 }
                             .padding(.vertical, 4)
                             .frame(maxWidth: .infinity)
-                            .foregroundColor(.black) // или другой подходящий
-                            .font(fontManager.font(size: 16)) // ✅ Применяем кастомный шрифт
+                            .textStyle(size: 16) // Размер, стиль и цвет шрифта.
                             .cornerRadius(10)
                         }
                     }

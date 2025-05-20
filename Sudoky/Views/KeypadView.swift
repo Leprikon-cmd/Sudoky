@@ -31,11 +31,10 @@ struct KeypadView: View {
                             }
                             }) {
                             Text(number == 0 ? "⌫" : "\(number)")
-                                .foregroundColor((Color("ButtonPrimary"))) 
+                                .textStyle(size: 20) // Размер, стиль и цвет шрифта.
                                 .frame(width: 40, height: 40) // [2] Размер кнопки
                                 .background(Color("CellBackground").opacity(0.8)) // [3] Цвет фона
                                 .cornerRadius(6) // [4] Скругление углов
-                                .font(fontManager.font(size: 20)) // Размер и стиль шрифта.
                         }
                     }
                 }

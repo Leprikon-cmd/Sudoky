@@ -44,7 +44,7 @@ struct SettingsView: View {
             Picker(loc("settings.fonts.select"), selection: $selectedFont) {
                 ForEach(fontManager.availableFonts, id: \.self) { fontName in
                     Text(fontName)
-                        .font(fontManager.font(size: 16)) // ++ Показываем как выглядит
+                        .textStyle(size: 16) // Размер, стиль и цвет шрифта.
                 }
             }
 
