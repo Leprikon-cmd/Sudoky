@@ -1,14 +1,15 @@
 //
-//  Settings Manager.swift
+//  SettingsManager.swift
 //  Sudoky
 //
 //  Created by Евгений Зотчик on 09.05.2025.
-
+//
 
 import Foundation
 import SwiftUI
 
 class SettingsManager: ObservableObject {
+    static let shared = SettingsManager()
     // MARK: - Подсказки
     @AppStorage("highlightErrors") var highlightErrors: Bool = true
     @AppStorage("showTimer") var showTimer: Bool = true
@@ -19,12 +20,24 @@ class SettingsManager: ObservableObject {
     @AppStorage("selectedBoardStyle") var selectedBoardStyle: String = "Классика"
     @AppStorage("selectedTheme") var selectedTheme: String = "Светлая"
 
+    // ++ Цвет текста
+    @AppStorage("selectedTextColorName") var selectedTextColorName: String = "white" // Сохраняем цвет по имени
+
+    let availableTextColors: [String] = [
+        "TextColor"
+    ]
+
+    var selectedTextColor: Color {
+        Color(selectedTextColorName)
+    }
+
     // MARK: - Звук и язык
     @AppStorage("soundEnabled") var soundEnabled: Bool = true
     @AppStorage("language") var language: String = Locale.current.language.languageCode?.identifier ?? "ru"
+
     // MARK: - Таймер
-    @AppStorage("timerMode") var timerMode: Bool = false // true — пользователь сам ставит лимит
-    @AppStorage("maxTime") var maxTime: Int = 600 // в секундах (по умолчанию 10 мин)
+    @AppStorage("timerMode") var timerMode: Bool = false
+    @AppStorage("maxTime") var maxTime: Int = 600
 
     // MARK: - Варианты выбора
     let fontOptions = ["Стандартный", "Моноширинный", "Рукописный"]

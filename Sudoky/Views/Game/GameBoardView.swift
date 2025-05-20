@@ -6,15 +6,19 @@ struct GameBoardView: View {
     let highlightEnabled: Bool
     let showErrors: Bool
     let onCellTap: (Int, Int) -> Void
+    var customWidth: CGFloat? = nil // + добавили возможность вручную задать ширину
 
     var body: some View {
         GeometryReader { geo in
             // 📐 Получаем размер рамки (ограничение по ширине/высоте)
             let screenWidth = UIScreen.main.bounds.width
-            let frameSize = screenWidth // не зависит от geo внутри VStack
-            let insetRatio: CGFloat = 0.045 // ⚠️ подобрать вручную под картинку
-            let gridSize = frameSize * (1 - insetRatio * 2)
-            let cellSize = gridSize / 9
+            let isPad = UIDevice.current.userInterfaceIdiom == .pad
+
+            // + уменьшаем ширину на iPad (на 25%)
+            let frameSize = isPad ? screenWidth * 0.75 : screenWidth // ++ Размер доски
+            let insetRatio: CGFloat = 0.045 // + коэффициент пустой зоны внутри рамки
+            let gridSize = frameSize * (1 - insetRatio * 2) // ++ внутренняя область под ячейки
+            let cellSize = gridSize / 9 // ++ размер одной ячейки
 
             ZStack {
                 // 🧩 Игровое поле

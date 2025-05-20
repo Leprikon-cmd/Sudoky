@@ -4,6 +4,7 @@ struct StartView: View {
     let statsManager: StatsManager
     @Binding var path: NavigationPath
     @AppStorage("playerMotto") private var playerMotto: String = ""
+    @AppStorage("playerName") private var playerName: String = ""
     @State private var hasSave: Bool = false
     @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
     @EnvironmentObject var languageManager: LanguageManager // Локализация
@@ -11,7 +12,7 @@ struct StartView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            BackgroundView() // ← всё сделает сам
+            BackgroundView() // Фон
                 .ignoresSafeArea()
             
             // Кнопка настроек
@@ -20,110 +21,113 @@ struct StartView: View {
                 Button(action: {
                     path.append(Route.settings)
                 }) {
-                    Text("📜") // или "⚙️", "📜", "🔧", "🎛", "🧘"
-                        .font(.system(size: 28))
-                        .padding(12)                          // ← отступ внутри "круга"
-                        .background(Color.white.opacity(0.2)) // ← фон кнопки
-                        .clipShape(Circle())                  // ← форма — круг
+                    Text("📜") // Кнопка настройки
+                        .font(.system(size: 40))
+                        .padding(6)                          // отступ внутри "круга"
+                        .clipShape(Circle())                  // форма — круг
                 }
-                .padding(.trailing) // отступ справа
+                .padding(.trailing, 35) // отступ справа
+                .padding(.top, 30) // отступ сверху
             }
             
-            VStack() {
-                
-                Spacer()
-                
-                // Облачко для мудрости — визуальный блок с возможностью ввода текста
-                ZStack(alignment: .topLeading) {
+            // Оборачиваем всё содержимое в ZStack с фиксированным фоном
+            ZStack {
+                VStack {
+                    Spacer()
                     
-                // Фон облачка: закруглённый прямоугольник
-                RoundedRectangle(cornerRadius: 16) // ← Радиус скругления углов "облачка". Больше — мягче форма, меньше — строже.
-                    .fill(Color.white.opacity(0.3)) // ← Прозрачность фона: 0.3 — хорошо видно фон. Увеличь до 0.5 — будет плотнее.
-                    .overlay(
-                RoundedRectangle(cornerRadius: 16) // ← Должен совпадать с основным радиусом, чтобы обводка легла чётко по краям
-                .stroke(Color.white.opacity(0.4), lineWidth: 1) // ← Цвет и толщина рамки. 0.4 — еле заметная, 1 — аккуратная толщина
-                        )
-                .shadow(radius: 3) // ← Мягкая тень под блоком. Radius = 3 делает лёгкий объём. Увеличь — будет сильнее «всплывать».
-                // Поле ввода текста внутри облачка
-                    TextField(loc("start.placeholder.motto"), text: $playerMotto)
-                        .padding() // ← Внутренний отступ текста от краёв рамки. Стандартное значение (обычно 16)
-                        .foregroundColor(.black) // ← Цвет вводимого текста
-                        .multilineTextAlignment(.leading) // ← Текст будет выравниваться по левому краю
-                        .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
-                }
-                // Размер блока облачка
-                .frame(maxWidth: 300, minHeight: 20, maxHeight: 50) // ← Максимальная ширина = 300 поинтов, мин. высота = 20 мин. высота 50
-                // Отступ снизу от следующего элемента
-                .padding(.bottom, 10) // ← Отступ вниз. Если снизу элемент прилипает — увеличь.
-                
-                // Аватар мудреца (теперь из ассетов)
-                Image("sage_avatar_01") // ← имя изображения в Assets
-                    .resizable()                        // даёт возможность масштабировать
-                    .scaledToFit()                      // сохраняет пропорции
-                    .frame(width: 200, height: 200)     // можно регулировать размер
-                    .cornerRadius(16)                   // скруглённые углы
-                    .shadow(radius: 5)                  // мягкая тень для объёма
-                
-                // Уровень (короткий)
-                Text(String(format: loc("start.levelShort"), playerProgress.currentLevel))
-                    .font(fontManager.font(size: 16))
-                    .foregroundColor(.white)
-
-                // Уровень: N
-                Text(String(format: loc("start.levelLong"), playerProgress.currentLevel))
-                    .font(fontManager.font(size: 16))
-
-                // Прогресс
-                ProgressView(
-                    value: progressPercent(),
-                    total: 1.0
-                )
-                .progressViewStyle(LinearProgressViewStyle(tint: .green))
-                .frame(width: 200)
-
-                // Текущий XP / нужный XP
-                Text(String(format: loc("start.xpProgress"),
-                    playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()),
-                    xpForNext()
-                ))
-                .font(fontManager.font(size: 16))
-                .foregroundColor(.gray)
-
-                // Кнопка — начать новую игру
-                Button(loc("start.newGame")) {
-                    path.append(Route.difficulty)
-                }
-                .buttonStyle(.bordered)
-                .font(fontManager.font(size: 24))
-
-                // Кнопка — статистика
-                Button(loc("start.stats")) {
-                    path.append(Route.stats)
-                }
-                .buttonStyle(.bordered)
-                .font(fontManager.font(size: 24))
-
-                // Кнопка — продолжить
-                if hasSave {
-                    Button(loc("start.resume")) {
-                        path.append(Route.resume)
+                    // Облачко для мудрости — визуальный блок с возможностью ввода текста
+                    ZStack(alignment: .topLeading) {
+                        RoundedRectangle(cornerRadius: 16) // Радиус скругления углов "облачка"
+                            .fill(Color("TextColor").opacity(0)) // Прозрачность фона
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16) // Совпадающая рамка
+                                    .stroke(Color("Line").opacity(0.8), lineWidth: 1)
+                            )
+                            .shadow(radius: 3) // Мягкая тень под блоком
+                        
+                        // Поле ввода текста внутри облачка
+                        TextField(loc("start.placeholder.motto"), text: $playerMotto)
+                            .padding()
+                            .foregroundColor(.black)
+                            .multilineTextAlignment(.leading)
+                            .font(fontManager.font(size: 16)) // Размер и стиль шрифта.
                     }
-                    .buttonStyle(.bordered)
-                    .font(fontManager.font(size: 24))
+                    .frame(maxWidth: 300, minHeight: 20, maxHeight: 50)
+                    .padding(.bottom, 6)
+                    
+                    // Аватар мудреца
+                    Image("sage_avatar_01")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 200, height: 200)
+                        .cornerRadius(16)
+                        .shadow(radius: 5)
+                    
+                    
+                    // 💬 Имя и уровень — объединены в одну строку
+                    Text("\(playerName) — \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
+                        .textStyle(size: 20)
+                        .multilineTextAlignment(.center)
+                    
+                    // ✅ Прогрессбар (путь мудреца)
+                    ProgressView(value: progressPercent(), total: 1.0) // передаём текущий и максимальный прогресс
+                        .progressViewStyle(
+                            LinearProgressViewStyle(tint: .green) // Цвет индикатора (зелёный)
+                        )
+                        .frame(width: 200, height: 50) // Ширина/Высота
+                        .padding(.vertical, 2) // Отступ по горизонту
+                    
+                    // Текущий XP / нужный XP
+                    Text(String(format: loc("start.xpProgress"),
+                                playerProgress.currentXP.truncatingRemainder(dividingBy: xpForNext()),
+                                xpForNext()
+                               ))
+                    .font(fontManager.font(size: 16))
+                    .foregroundColor(.gray)
+                    
+                    // Кнопки — одинаковая ширина
+                    VStack(spacing: 12) {
+                        Button(loc("start.newGame")) {
+                            path.append(Route.difficulty)
+                        }
+                        .textStyle(size: 24)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        
+                        Button(loc("start.stats")) {
+                            path.append(Route.stats)
+                        }
+                        .textStyle(size: 24)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        
+                        if hasSave {
+                            Button(loc("start.resume")) {
+                                path.append(Route.resume)
+                            }
+                            .textStyle(size: 24)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                    
+                    Spacer()
                 }
-                
-                Spacer()
-
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                .ignoresSafeArea(.keyboard)
             }
-            .frame(maxWidth: .infinity, alignment: .center) // Выравнивание по центру
-            .tint(Color("ButtonPrimary"))
-            .padding()
+            .frame(height: 700) // ✅ гарантированная высота всего контента
+            .padding(.top, 100) // ← Смещение карточки ближе к низу
         }
         .onAppear {
+             //  for name in UIFont.fontNames(forFamilyName: family) {print("🔹 \(name)")}} // Проверка названий шрифтов (если понадобится)
             hasSave = hasSavedGame()
             }
         }
-
+        
+    
     private func progressPercent() -> Double {
         let current = playerProgress.currentXP
         let level = playerProgress.currentLevel
@@ -142,6 +146,7 @@ struct StartView: View {
     }
 }
 
+
 #Preview {
     StartView(
         statsManager: StatsManager(),
@@ -149,3 +154,4 @@ struct StartView: View {
     )
     .environmentObject(PlayerProgressManager.shared)
 }
+

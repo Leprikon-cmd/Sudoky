@@ -11,60 +11,79 @@ struct StatsView: View {
         ZStack(alignment: .top) {
             BackgroundView() // Фон
                 .ignoresSafeArea()
-            
+
             VStack {
                 TabView(selection: $selectedIndex) {
                     ForEach(Array(Difficulty.allCases.enumerated()), id: \.offset) { index, difficulty in
                         if let entry = statsManager.stats[difficulty] {
                             
-                            VStack(alignment: .leading, spacing: 10) {
-                                // ++ Название уровня сложности
-                                Text(difficulty.localizedName) // ← если у тебя есть computed property `localizedName`, иначе вернись к rawValue и переводи
-                                    .font(fontManager.font(size: 30)) // + Размер и стиль шрифта
-                                    .bold()
-                                    .padding(.bottom)
+                            ZStack {
+                                // 🎨 Картинка-фон по индексу (фикс. размер)
+                                Image(difficulty.parchmentImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 650) // ✅ фиксированная высота
+                                    .padding(.horizontal, 2)
 
-                                // ++ Статистика по этому уровню
-                                Text(loc("stats.gamesPlayed") + ": \(entry.played)")
-                                Text(loc("stats.wins") + ": \(entry.wins)")
-                                Text(loc("stats.bestTime") + ": \(formatTime(entry.bestTime))")
-                                Text(loc("stats.winStreak") + ": \(entry.winStreak) / \(loc("stats.record")): \(entry.maxWinStreak)")
-                                Text(loc("stats.flawlessWins") + ": \(entry.flawlessStreak) / \(loc("stats.record")): \(entry.maxFlawlessStreak)")
+                                VStack(alignment: .leading, spacing: 10) {
+                                    // ++ Название уровня сложности
+                                    Text(difficulty.localizedName) // Локализованное название уровня сложности
+                                        .textStyle(size: 30) // + Размер и стиль шрифта
+                                        .bold()
+                                        .padding(.bottom)
 
-                                // ++ Кнопка сброса
-                                Button(loc("stats.reset")) {
-                                    statsManager.resetStats()
+                                    // ++ Статистика по этому уровню
+                                    Text(loc("stats.gamesPlayed") + ": \(entry.played)")
+                                    Text(loc("stats.wins") + ": \(entry.wins)")
+                                    Text(loc("stats.bestTime") + ": \(formatTime(entry.bestTime))")
+                                    Text(loc("stats.winStreak") + ": \(entry.winStreak) / \(loc("stats.record")): \(entry.maxWinStreak)")
+                                    Text(loc("stats.flawlessWins") + ": \(entry.flawlessStreak) / \(loc("stats.record")): \(entry.maxFlawlessStreak)")
                                 }
-                                .foregroundColor(.red)
-                                .padding(.top, 20)
+                                .foregroundColor(Color("CardTextColor")) // ← Цвет текста (задать в Assets)
+                                .textStyle(size: 16) // Размер и стиль шрифта.
+                                .padding()
                             }
-                            
-                .foregroundColor(Color("CardTextColor")) // ← Цвет текста (задать в Assets)
-                .font(fontManager.font(size: 18)) // Размер и стиль шрифта.
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(
-                    Color("NavigationAccent")            // ← Цвет фона карточки
-                    .opacity(0.5)                        // ← Прозрачность (0.0–1.0)
-                    .blur(radius: 0.5)                   // ← Эффект размытия, можно убрать
-                    .cornerRadius(16)                    // ← Скругление углов
-                                )
-                    .padding(.horizontal, 24)           // ← Отступы по бокам от экрана
-                    .padding(.top, 100)              // ← Смещение карточки ближе к низу
-                    .tag(index)                         // ← Связь с индексом в PageTabView
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 20) // ← Смещение карточки ближе к низу
+                            .tag(index)        // ← Связь с индексом в PageTabView
                         }
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-                .frame(height: 500)
-                
-                Button(loc("stats.reset")) {
+                .frame(height: 650) // ⬅️ Высота всей области карточек
+
+                // ++ Кнопка сброса
+                Button(action: {
                     statsManager.resetStats()
+                }) {
+                    Text(loc("stats.reset"))
+                        .font(fontManager.font(size: 18)) // ✅ применяем свой шрифт
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white.opacity(0.2)) // + немного стилистики
+                        )
                 }
-                .foregroundColor(.red)
                 .padding(.top, 20)
+                .listRowBackground(Color.clear) // ✅ обязательно
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    // 🔙 Кастомная кнопка «Назад» (заменяет стандартную)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            path.removeLast()
+                        }) {
+                            Image("wooden_back")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 40)
+                        }
+                    }
+                }
             }
-            .padding()
         }
     }
 

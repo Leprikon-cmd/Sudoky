@@ -64,14 +64,13 @@ struct GameView: View {
                     highlightedValue: viewModel.highlightedValue,
                     highlightEnabled: viewModel.highlightIdenticals,
                     showErrors: viewModel.showErrors,
-                    onCellTap: { row, col in viewModel.selectCell(row: row, col: col) }
+                    onCellTap: { row, col in viewModel.selectCell(row: row, col: col) },
+                    customWidth: UIDevice.current.userInterfaceIdiom == .pad
+                        ? UIScreen.main.bounds.width * 0.7
+                        : nil
                 )
                 .aspectRatio(1, contentMode: .fit)
-                .frame(maxWidth: .infinity)
                 .padding(.horizontal)
-                
-                // 🔽 Отступ после поля
-                Spacer(minLength: 16)
                 
                 // ⌨️ Клавиатура
                 HStack(alignment: .top, spacing: 16) {
@@ -86,11 +85,26 @@ struct GameView: View {
                 }
                 .frame(height: 180)
                 .padding(.horizontal)
-                
+                // + Отступ сверху только для iPad
+                .padding(.top, UIDevice.current.userInterfaceIdiom == .pad ? 32 : 32)
                 // 🔚 Отступ снизу для iPad / iPhone
                 Spacer(minLength: 16)
             }
             .padding(.top, 16)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                // 🔙 Кастомная кнопка «Назад» (заменяет стандартную)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        path.removeLast()
+                    }) {
+                        Image("wooden_back")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 40)
+                    }
+                }
+            }
             
             // MARK: - Реакция на проигрыш
             .onChange(of: viewModel.isGameOver) { _, newValue in
@@ -145,12 +159,9 @@ struct GameView: View {
                 )
             )
             
-            .padding()
-            .navigationTitle(loc("game.title"))
-            .tint(Color("ButtonPrimary"))
             .navigationBarTitleDisplayMode(.inline)
             .onDisappear {
-                viewModel.saveGame() // ← сохраняем прогресс при выходе
+                viewModel.saveGame() // сохраняем прогресс при выходе
             }
         }
     }

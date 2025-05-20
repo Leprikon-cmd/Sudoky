@@ -1,5 +1,7 @@
+//
 //  SettingsView.swift
 //  Sudoky
+//
 
 import SwiftUI
 
@@ -7,22 +9,25 @@ struct SettingsView: View {
     @EnvironmentObject var settings: SettingsManager
     @AppStorage("selectedFont") private var selectedFont: String = "System"
     @AppStorage("playerMotto") private var playerMotto: String = ""
-    @State private var languageTrigger = false // + триггер для перерисовки
-
+    @State private var languageTrigger = false // ++ Триггер для перерисовки при смене языка
+    @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
 
     var body: some View {
         Form {
-            hintsSection
-            fontsSection
-            boardStyleSection
-            themeSection
-            languageSection
-            soundSection
-            timerSection
+            hintsSection          // ++ Подсказки
+            fontsSection          // ++ Шрифты + Цвет текста
+            boardStyleSection     // ++ Стиль доски
+            themeSection          // ++ Тема
+            languageSection       // ++ Язык
+            soundSection          // ++ Звук
+            timerSection          // ++ Таймер
         }
-        .navigationTitle(loc("settings.title")) // + Заголовок настраивается через локализацию
+        .navigationTitle(loc("settings.title")) // ++ Локализованный заголовок
+        .environment(\.font, fontManager.font(size: 16)) //Шрифт
+        .foregroundColor(Color("NavigationAccent")) // ← Цвет текста (задать в Assets)
     }
 
+    // MARK: - Подсказки
     private var hintsSection: some View {
         Section(header: Text(loc("settings.hints"))) {
             Toggle(loc("settings.hints.showErrors"), isOn: $settings.highlightErrors)
@@ -31,19 +36,29 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Шрифты + Цвет текста
     private var fontsSection: some View {
         Section(header: Text(loc("settings.fonts"))) {
-            let fonts = ["System", "Pacifico", "CormorantGaramond", "Medieval", "OldStandard", "RuslanDisplay", "ShareTech"]
+            
 
             Picker(loc("settings.fonts.select"), selection: $selectedFont) {
-                ForEach(fonts, id: \.self) { fontName in
+                ForEach(fontManager.availableFonts, id: \.self) { fontName in
                     Text(fontName)
-                        .font(FontManager.shared.font(size: 16))
+                        .font(fontManager.font(size: 16)) // ++ Показываем как выглядит
+                }
+            }
+
+            // ++ Цвет текста
+            Picker(loc("settings.textColor.select"), selection: $settings.selectedTextColorName) {
+                ForEach(settings.availableTextColors, id: \.self) { colorName in
+                    Text(colorName.capitalized)
+                        .foregroundColor(Color(colorName)) // ++ Цвет — сразу визуально виден
                 }
             }
         }
     }
 
+    // MARK: - Стиль доски
     private var boardStyleSection: some View {
         Section(header: Text(loc("settings.board"))) {
             Picker(loc("settings.board.style"), selection: $settings.selectedBoardStyle) {
@@ -54,6 +69,7 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Тема
     private var themeSection: some View {
         Section(header: Text(loc("settings.theme"))) {
             Picker(loc("settings.theme.select"), selection: $settings.selectedTheme) {
@@ -64,6 +80,7 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Язык
     private var languageSection: some View {
         Section(header: Text(loc("settings.language"))) {
             Picker(loc("settings.language.select"), selection: $settings.language) {
@@ -72,18 +89,20 @@ struct SettingsView: View {
                 }
             }
             .onChange(of: settings.language) { newLang in
-                LocalizedBundle.setLanguage(newLang) // ✅ переключаем локаль
-                languageTrigger.toggle()             // ✅ форсим перерисовку
+                LocalizedBundle.setLanguage(newLang) // ++ Обновляем бандл
+                languageTrigger.toggle()             // ++ Форсим перерисовку
             }
         }
     }
 
+    // MARK: - Звук
     private var soundSection: some View {
         Section(header: Text(loc("settings.sound"))) {
             Toggle(loc("settings.sound.enable"), isOn: $settings.soundEnabled)
         }
     }
 
+    // MARK: - Таймер
     private var timerSection: some View {
         Section(header: Text(loc("settings.timer"))) {
             Toggle(loc("settings.timer.enable"), isOn: $settings.timerMode)

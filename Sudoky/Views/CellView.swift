@@ -8,7 +8,6 @@ import SwiftUI
 
 struct CellView: View {
     @EnvironmentObject var fontManager: FontManager // ++ Менеджер шрифтов — нужен всегда
-
     let cell: Cell
     let row: Int
     let col: Int
@@ -21,6 +20,16 @@ struct CellView: View {
     @State private var showBrush: Bool = false
 
     private static var picker = StrokeImagePicker() // ++ Генератор случайных мазков
+    
+    private func textColor() -> Color {
+        if isError {
+            return .red // ++ если ошибка — красный
+        } else if cell.isEditable {
+            return Color("ButtonPrimary") // + пользовательский ввод
+        } else {
+            return .black // ++ изначальные цифры
+        }
+    }
 
     var isHighlighted: Bool {
         highlightedValue != nil && highlightedValue == cell.value && cell.value != 0
@@ -32,21 +41,18 @@ struct CellView: View {
 
     var body: some View {
         ZStack {
-            // 1. 🟫 Фон ячейки
+            // 🟫 Фон ячейки
             Rectangle()
-                .fill(isError ? Color("ErrorCellColor") : Color("CellBackground")) // 🔧 Цвета из Assets
+                .fill(Color("CellBackground")) // ++ Фон, цвет из Assets
 
-            // 2. 🧱 Внутренние жирные линии 3×3
-            GridLinesOverlay(row: row, col: col, cellSize: cellSize) // ++ Подгрид из линий по краям блока
-
-            // 3. 🔢 Основная цифра
+            // 🔢 Основная цифра
             if cell.value != 0 {
-                fontManager.styledText("\(cell.value)", size: cellSize * 0.8) // 🔧 Размер шрифта
-                    .foregroundColor(cell.isEditable ? Color("ButtonPrimary") : .black) // 🔧 Цвет
+                Text("\(cell.value)")
+                    .textStyle(size: cellSize * 0.8, customColor: isError ? .red : nil)
                     .frame(width: cellSize, height: cellSize, alignment: .center)
             }
 
-            // 4. ✏️ Заметки (если нет цифры)
+            // ✏️ Заметки (если нет цифры)
             else if !cell.notes.isEmpty {
                 VStack(spacing: 1) {
                     ForEach(0..<3) { row in
@@ -54,7 +60,7 @@ struct CellView: View {
                             ForEach(1..<4) { col in
                                 let noteValue = row * 3 + col
                                 Text(cell.notes.contains(noteValue) ? "\(noteValue)" : "")
-                                    .font(.system(size: cellSize * 0.3)) // 🔧 Размер заметок
+                                    .textStyle(size: cellSize * 0.3) // ✅ Тоже централизованно
                                     .frame(width: cellSize / 3, height: cellSize / 3)
                                     .foregroundColor(.gray)
                             }
@@ -63,20 +69,16 @@ struct CellView: View {
                 }
             }
 
-            // 5. 🖌️ Обводка (мазок) — поверх всего
-            if cell.isSelected || isHighlighted {
-                Image(strokeName.isEmpty ? Self.picker.nextAndAssign(to: $strokeName) : strokeName)
+            // 🖌️ Обводка (мазок) — поверх всего
+            if (cell.isSelected || isHighlighted), !strokeName.isEmpty {
+                Image(strokeName) // ++ Просто используем текущее имя, НИЧЕГО НЕ МЕНЯЕМ
                     .resizable()
                     .scaledToFit()
                     .frame(width: cellSize * 1, height: cellSize * 1) // 🔧 увеличение мазка
                     .opacity(showBrush ? 0.8 : 0) // 🔧 Прозрачность мазка
                     .allowsHitTesting(false)
                     .zIndex(10) // ++ Мазок всегда сверху
-                    .onAppear {
-                        withAnimation(.easeOut(duration: 0.9)) { // 🔧 Анимация появления
-                            showBrush = true
-                        }
-                    }
+                    .animation(.easeOut(duration: 0.4), value: showBrush) // ++ Стабильная анимация
             }
         }
         .frame(width: cellSize, height: cellSize) // ++ фиксированный размер ячейки
@@ -84,9 +86,14 @@ struct CellView: View {
         .onChange(of: isHighlighted) { _, _ in handleBrushChange() }
     }
 
-    // ++ Управление появлением мазка
+    // ++ Управление появлением и исчезновением мазка
     private func handleBrushChange() {
-        if !(cell.isSelected || isHighlighted) {
+        if cell.isSelected || isHighlighted {
+            if strokeName.isEmpty {
+                strokeName = Self.picker.next() // ++ Генерируем ОДИН РАЗ
+                }
+            showBrush = true
+        } else {
             showBrush = false
             strokeName = ""
         }

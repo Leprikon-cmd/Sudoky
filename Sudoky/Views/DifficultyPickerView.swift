@@ -4,6 +4,16 @@ import SwiftUI
 enum Difficulty: String, CaseIterable, Identifiable, Codable {
     case новичок, ученик, мастер, сенсей, dokushin
     
+    var parchmentImage: String {
+            switch self {
+            case .новичок: return "parchment_bg2"
+            case .ученик:  return "parchment_bg6"
+            case .мастер:  return "parchment_bg3"
+            case .сенсей:  return "parchment_bg4"
+            case .dokushin: return "parchment_bg7"
+            }
+        }
+    
     var id: String { self.rawValue }
 
     var localizedName: String {
@@ -35,6 +45,12 @@ struct DifficultyPickerView: View {
             
             // ⬇️ ТРИГГЕР НА ПЕРЕРИСОВКУ
                     let _ = languageManager.language // ++ Обновит View при смене языка
+            
+            VStack(spacing: 16) {
+                Text(loc("difficulty.title"))
+                    .font(fontManager.font(size: 30))
+                    .padding(.top, 40) // отступ
+                    .foregroundColor(Color("ButtonPrimary"))
 
             List(Difficulty.allCases) { difficulty in
                 Button(action: {
@@ -48,17 +64,31 @@ struct DifficultyPickerView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white.opacity(0.2)) // ← Фон кнопки
+                                .fill(Color.white.opacity(0)) // ← Фон кнопки
                         )
                 }
                 .listRowBackground(Color.clear)           // ← Строка без фона
             }
             .scrollContentBackground(.hidden)             // ← Убираем фон всего списка
-            .background(Color.clear)                      // ← Подстраховка
-            .navigationTitle(loc("difficulty.title")) // ++ Локализованный заголовок
+            .background(Color.clear)                      // ← Подстраховк
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        // Назад
+                        path.removeLast()
+                    }) {
+                        Image("wooden_back") // ← имя ассета
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 40)
+                    }
+                }
+            }
+                }
+            }
         }
     }
-}
 
 #Preview {
     DifficultyPickerView(

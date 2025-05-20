@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>Launch_Screen</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<true/>
+	</dict>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>Russian</string>
@@ -11,11 +18,15 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Pacifico-Regular.ttf</string>
-		<string>CormorantGaramond-VariableFont_wght.ttf</string>
+		<string>UncialAntiqua-Regular.ttf</string>
+		<string>CormorantGaramond-Regular.ttf</string>
+		<string>GreatVibes-Regular.ttf</string>
+		<string>Deutsch Gothic.ttf</string>
 		<string>MedievalSharp-Regular.ttf</string>
 		<string>OldStandardTT-Regular.ttf</string>
 		<string>RuslanDisplay-Regular.ttf</string>
 		<string>ShareTechMono-Regular.ttf</string>
+		<string>Skranji-Regular.ttf</string>
 	</array>
 </dict>
 </plist>

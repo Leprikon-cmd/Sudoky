@@ -11,12 +11,13 @@ struct GameHeaderView: View {
     let timeElapsed: TimeInterval    // ← сколько прошло времени
     let livesRemaining: Int          // ← сколько осталось жизней
     @EnvironmentObject var languageManager: LanguageManager // Локализация
+    @EnvironmentObject var fontManager: FontManager   // Менеджер шрифтов
 
     var body: some View {
         VStack(spacing: 4) {
             // + Сложность (в формате "Сложность: Мастер" / "Difficulty: Master")
             Text(String(format: loc("header.difficulty"), difficulty.localizedName))
-                .font(.headline)
+                .font(fontManager.font(size: 14))
 
             // + Жизни (❤️)
             HStack(spacing: 4) {
@@ -28,7 +29,7 @@ struct GameHeaderView: View {
 
             // + Таймер в секундах
             Text(String(format: loc("header.time"), Int(timeElapsed)))
-                .font(.subheadline)
+                .font(fontManager.font(size: 14))
         }
         .padding(.bottom, 8)
     }

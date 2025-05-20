@@ -16,28 +16,37 @@ struct GameAlertsView: View {
     let onNewGame: () -> Void
     let onStats: () -> Void
     let onMenu: () -> Void
-    @EnvironmentObject var languageManager: LanguageManager // Локализация
 
     var body: some View {
-        // Заглушка, чтобы SwiftUI не выкинул View
-        Color.clear
-            .alert(loc("alert.lose.title"), isPresented: showLoseAlert) {
-                Button(loc("alert.restart"), action: onRestart)
-                Button(loc("alert.newGame"), action: onNewGame)
-                Button(loc("alert.stats"), action: onStats)
-                Button(loc("alert.menu"), action: onMenu)
-            } message: {
-                Text(String(format: loc("alert.lose.message"), abs(gainedXP)))
+        ZStack {
+            if showWinAlert.wrappedValue {
+                GameCustomAlert(
+                    title: loc("alert.win.title"),
+                    message: String(format: loc("alert.win.message"), formatTime(elapsedTime), gainedXP),
+                    actions: [
+                        AlertAction(title: loc("alert.restart"), handler: onRestart),
+                        AlertAction(title: loc("alert.newGame"), handler: onNewGame),
+                        AlertAction(title: loc("alert.stats"), handler: onStats),
+                        AlertAction(title: loc("alert.menu"), handler: onMenu)
+                    ],
+                    isPresented: showWinAlert
+                )
             }
 
-            .alert(loc("alert.win.title"), isPresented: showWinAlert) {
-                Button(loc("alert.restart"), action: onRestart)
-                Button(loc("alert.newGame"), action: onNewGame)
-                Button(loc("alert.stats"), action: onStats)
-                Button(loc("alert.menu"), action: onMenu)
-            } message: {
-                Text(String(format: loc("alert.win.message"), formatTime(elapsedTime), gainedXP))
+            if showLoseAlert.wrappedValue {
+                GameCustomAlert(
+                    title: loc("alert.lose.title"),
+                    message: String(format: loc("alert.lose.message"), abs(gainedXP)),
+                    actions: [
+                        AlertAction(title: loc("alert.restart"), handler: onRestart),
+                        AlertAction(title: loc("alert.newGame"), handler: onNewGame),
+                        AlertAction(title: loc("alert.stats"), handler: onStats),
+                        AlertAction(title: loc("alert.menu"), handler: onMenu)
+                    ],
+                    isPresented: showLoseAlert
+                )
             }
+        }
     }
 
     private func formatTime(_ seconds: TimeInterval) -> String {
