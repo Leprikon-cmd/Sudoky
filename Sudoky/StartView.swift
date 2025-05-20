@@ -69,12 +69,13 @@ struct StartView: View {
                         TextField(loc("start.enterName"), text: $playerName)
                             .textStyle(size: 20)
                             .multilineTextAlignment(.trailing)
-                            .frame(width: 200) // 🔧 Ширина поля для имени
+                            .frame(width: 180) // 🔧 Ширина поля для имени
 
                         Text("— \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
                             .textStyle(size: 20)
                     }
-                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity) // ✅ Занимает всю ширину родителя
+                    .multilineTextAlignment(.center) // Центруем строку визуально
                     
                     // ✅ Прогрессбар (путь мудреца)
                     ProgressView(value: progressPercent(), total: 1) // передаём текущий и максимальный прогресс
