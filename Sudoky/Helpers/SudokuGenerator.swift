@@ -56,7 +56,7 @@ struct SudokuGenerator {
     private static func removeCells(_ board: inout [[Int]], for difficulty: Difficulty) {
         let cellsToRemove: Int
         switch difficulty {
-        case .новичок: cellsToRemove = 1 //Для тестов
+        case .новичок: cellsToRemove = 28 //Для тестов
         case .ученик:  cellsToRemove = 38
         case .мастер:  cellsToRemove = 46
         case .сенсей:  cellsToRemove = 54
