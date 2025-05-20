@@ -30,6 +30,19 @@ class SettingsManager: ObservableObject {
     var selectedTextColor: Color {
         Color(selectedTextColorName)
     }
+    
+    init() {
+        registerDefaults()
+    }
+
+    private func registerDefaults() {
+        let defaults: [String: Any] = [
+            "selectedTextColorName": "TextColor",
+            "selectedFont": "Pacifico"
+        ]
+        UserDefaults.standard.register(defaults: defaults)
+    }
+
 
     // MARK: - Звук и язык
     @AppStorage("soundEnabled") var soundEnabled: Bool = true

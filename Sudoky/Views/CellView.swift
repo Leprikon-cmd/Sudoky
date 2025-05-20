@@ -12,13 +12,13 @@ struct CellView: View {
     let row: Int
     let col: Int
     let cellSize: CGFloat // ++ Используется для всех размеров и расчётов
-
+    
     let highlightedValue: Int?
     let showErrors: Bool
-
+    
     @State private var strokeName: String = ""
     @State private var showBrush: Bool = false
-
+    
     private static var picker = StrokeImagePicker() // ++ Генератор случайных мазков
     
     private func textColor() -> Color {
@@ -30,37 +30,44 @@ struct CellView: View {
             return .black // ++ изначальные цифры
         }
     }
-
+    
     var isHighlighted: Bool {
         highlightedValue != nil && highlightedValue == cell.value && cell.value != 0
     }
-
+    
     var isError: Bool {
         showErrors && cell.hasError
     }
-
+    
     var body: some View {
         ZStack {
             // 🟫 Фон ячейки
             Rectangle()
                 .fill(Color("CellBackground")) // ++ Фон, цвет из Assets
-
-            // 🔢 Основная цифра
+            
+            // 🔢 Основная цифра или заметки
             if cell.value != 0 {
-                Text("\(cell.value)")
-                    .textStyle(size: cellSize * 0.8, customColor: isError ? .red : nil)
-                    .frame(width: cellSize, height: cellSize, alignment: .center)
-            }
-
-            // ✏️ Заметки (если нет цифры)
-            else if !cell.notes.isEmpty {
+                if isError {
+                    Text("\(cell.value)")
+                        .textStyle(size: cellSize * 0.8, customColor: .red)
+                        .frame(width: cellSize, height: cellSize)
+                } else if cell.isEditable {
+                    Text("\(cell.value)")
+                        .textStyle(size: cellSize * 0.8) // цвет из настроек
+                        .frame(width: cellSize, height: cellSize)
+                } else {
+                    Text("\(cell.value)")
+                        .textStyle(size: cellSize * 0.8, customColor: .black)
+                        .frame(width: cellSize, height: cellSize)
+                }
+            } else if !cell.notes.isEmpty {
                 VStack(spacing: 1) {
                     ForEach(0..<3) { row in
                         HStack(spacing: 1) {
                             ForEach(1..<4) { col in
                                 let noteValue = row * 3 + col
                                 Text(cell.notes.contains(noteValue) ? "\(noteValue)" : "")
-                                    .textStyle(size: cellSize * 0.3) // ✅ Тоже централизованно
+                                    .textStyle(size: cellSize * 0.3)
                                     .frame(width: cellSize / 3, height: cellSize / 3)
                                     .foregroundColor(.gray)
                             }
@@ -68,7 +75,7 @@ struct CellView: View {
                     }
                 }
             }
-
+            
             // 🖌️ Обводка (мазок) — поверх всего
             if (cell.isSelected || isHighlighted), !strokeName.isEmpty {
                 Image(strokeName) // ++ Просто используем текущее имя, НИЧЕГО НЕ МЕНЯЕМ

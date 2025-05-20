@@ -29,6 +29,25 @@ private struct AutoTextStyle: ViewModifier {
     }
 }
 
+extension View {
+    /// Универсальный стиль: шрифт из настроек, цвет — кастомный (независимо от выбора игрока)
+    func textStyle(size: CGFloat, color: Color) -> some View {
+        modifier(FixedTextStyle(size: size, color: color))
+    }
+}
+
+private struct FixedTextStyle: ViewModifier {
+    let size: CGFloat
+    let color: Color
+    @EnvironmentObject var fontManager: FontManager
+
+    func body(content: Content) -> some View {
+        content
+            .font(fontManager.font(size: size)) // ✅ шрифт — из настроек
+            .foregroundColor(color)              // ✅ цвет — передаём вручную
+    }
+}
+
 class FontManager: ObservableObject {
     static let shared = FontManager()
 
