@@ -19,6 +19,8 @@ class SettingsManager: ObservableObject {
     @AppStorage("selectedFont") var selectedFont: String = "Стандартный"
     @AppStorage("selectedBoardStyle") var selectedBoardStyle: String = "Классика"
     @AppStorage("selectedTheme") var selectedTheme: String = "Светлая"
+    
+    @Published var musicEnabled: Bool = true // Музыка
 
     // ++ Цвет текста
     @AppStorage("selectedTextColorName") var selectedTextColorName: String = "white" // Сохраняем цвет по имени
@@ -45,6 +47,7 @@ class SettingsManager: ObservableObject {
 
 
     // MARK: - Звук и язык
+    
     @AppStorage("soundEnabled") var soundEnabled: Bool = true
     @AppStorage("language") var language: String = Locale.current.language.languageCode?.identifier ?? "ru"
 
@@ -65,3 +68,4 @@ class SettingsManager: ObservableObject {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
+

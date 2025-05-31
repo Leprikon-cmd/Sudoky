@@ -98,7 +98,15 @@ struct SettingsView: View {
     // MARK: - Звук
     private var soundSection: some View {
         Section(header: Text(loc("settings.sound"))) {
-            Toggle(loc("settings.sound.enable"), isOn: $settings.soundEnabled)
+            Toggle(loc("settings.sound"), isOn: $settings.soundEnabled)
+                .onChange(of: settings.soundEnabled) { _, isOn in
+                    if isOn {
+                        MusicManager.shared.playBackgroundMusic("Aurnis_Luthael")
+                    } else {
+                        MusicManager.shared.stopMusic()
+                    }
+                    
+                }
         }
     }
 

@@ -9,6 +9,7 @@ struct StartView: View {
     @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
     @EnvironmentObject var languageManager: LanguageManager // Локализация
     @EnvironmentObject var playerProgress: PlayerProgressManager
+    @EnvironmentObject var settings: SettingsManager // настройки
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -70,9 +71,9 @@ struct StartView: View {
                             .textStyle(size: 20)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 180) // 🔧 Ширина поля для имени
-
+                        
                         Text("— \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
-                            .textStyle(size: 20)
+                            .textStyle(size: 16)
                     }
                     .frame(maxWidth: .infinity) // ✅ Занимает всю ширину родителя
                     .multilineTextAlignment(.center) // Центруем строку визуально
@@ -130,10 +131,17 @@ struct StartView: View {
             .padding(.top, 100) // ← Смещение карточки ближе к низу
         }
         .onAppear {
-             //  for name in UIFont.fontNames(forFamilyName: family) {print("🔹 \(name)")}} // Проверка названий шрифтов (если понадобится)
+            //  for name in UIFont.fontNames(forFamilyName: family) {print("🔹 \(name)")}} // Проверка названий шрифтов (если понадобится)
+            // 🎵 Запускаем музыку только если она не играет
+                if settings.soundEnabled && !MusicManager.shared.isMusicPlaying {
+                    MusicManager.shared.playBackgroundMusic("Aurnis_Luthael")
+                }
+
+            
+            // 💾 Проверяем наличие сохранённой игры
             hasSave = hasSavedGame()
-            }
         }
+    }
         
     
     private func progressPercent() -> Double {

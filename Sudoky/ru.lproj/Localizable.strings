@@ -40,7 +40,7 @@
 "header.difficulty" = "Сложность: %@";
 "header.time" = "Время: %d сек";
 "start.levelShort" = "Ступень %d пути...";
-"start.levelLong" = "Ступень %d пути...";
+"start.levelLong" = "%d cтупень пути...";
 "start.xpProgress" = "%.0f / %.0f XP";
 "start.newGame" = "🐉 Новый Путь";
 "start.stats" = "📋 Уровни познания";
