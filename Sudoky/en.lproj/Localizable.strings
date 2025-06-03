@@ -50,3 +50,8 @@
 "start.placeholder.motto" = "Enter your wisdom...";
 "start.enterName" = "Enter your name";
 "settings.textColor.select" = "Text Color";
+"stats.resetConfirmTitle" = "Reset Statistics?";
+"stats.resetConfirmMessage" = "Are you sure you want to permanently delete all statistics?";
+"common.yes" = "Yes";
+"common.no" = "No";
+"settings.about" = "About the Project";

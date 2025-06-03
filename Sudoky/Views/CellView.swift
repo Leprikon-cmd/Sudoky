@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct CellView: View {
-    @EnvironmentObject var fontManager: FontManager // ++ Менеджер шрифтов — нужен всегда
+    @EnvironmentObject var fontManager: FontManager // ++ Менеджер шрифтов
     let cell: Cell
     let row: Int
     let col: Int
@@ -27,7 +27,7 @@ struct CellView: View {
         } else if cell.isEditable {
             return Color("ButtonPrimary") // + пользовательский ввод
         } else {
-            return .black // ++ изначальные цифры
+            return Color("ColorPrimary")    // ++ изначальные цифры
         }
     }
     
@@ -47,19 +47,9 @@ struct CellView: View {
             
             // 🔢 Основная цифра или заметки
             if cell.value != 0 {
-                if isError {
-                    Text("\(cell.value)")
-                        .textStyle(size: cellSize * 0.8, customColor: .red)
-                        .frame(width: cellSize, height: cellSize)
-                } else if cell.isEditable {
-                    Text("\(cell.value)")
-                        .textStyle(size: cellSize * 0.8) // цвет из настроек
-                        .frame(width: cellSize, height: cellSize)
-                } else {
-                    Text("\(cell.value)")
-                        .textStyle(size: cellSize * 0.8, customColor: .black)
-                        .frame(width: cellSize, height: cellSize)
-                }
+                Text("\(cell.value)")
+                    .textStyle(size: cellSize * 0.8, customColor: textColor()) // ✅ Централизованно
+                    .frame(width: cellSize, height: cellSize)
             } else if !cell.notes.isEmpty {
                 VStack(spacing: 1) {
                     ForEach(0..<3) { row in
@@ -75,6 +65,7 @@ struct CellView: View {
                     }
                 }
             }
+        
             
             // 🖌️ Обводка (мазок) — поверх всего
             if (cell.isSelected || isHighlighted), !strokeName.isEmpty {
@@ -132,13 +123,13 @@ struct CellView: View {
 
     // ++ Генератор случайных мазков
     class StrokeImagePicker {
-        private var available = Array(1...13).shuffled()
+        private var available = Array(1...9).shuffled()
 
         func next() -> String {
             if available.isEmpty {
-                available = Array(1...13).shuffled()
+                available = Array(1...9).shuffled()
             }
-            return "brush_stroke_\(available.removeFirst())"
+            return "stroke_brush_\(available.removeFirst())"
         }
 
         // ++ Синтаксический сахар для назначения в State

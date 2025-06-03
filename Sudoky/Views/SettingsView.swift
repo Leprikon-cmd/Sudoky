@@ -7,74 +7,39 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var settings: SettingsManager
+    @EnvironmentObject var fontManager: FontManager
+
     @AppStorage("selectedFont") private var selectedFont: String = "System"
     @AppStorage("playerMotto") private var playerMotto: String = ""
     @State private var languageTrigger = false // ++ Триггер для перерисовки при смене языка
-    @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
+    @State private var showAboutSheet = false
 
     var body: some View {
         Form {
-            hintsSection          // ++ Подсказки
             fontsSection          // ++ Шрифты + Цвет текста
-            boardStyleSection     // ++ Стиль доски
-            themeSection          // ++ Тема
             languageSection       // ++ Язык
             soundSection          // ++ Звук
-            timerSection          // ++ Таймер
+            aboutSection          // ++ О проекте
         }
         .navigationTitle(loc("settings.title")) // ++ Локализованный заголовок
-        .environment(\.font, fontManager.font(size: 16)) //Шрифт
+        .environment(\.font, fontManager.font(size: 16))
         .foregroundColor(Color("NavigationAccent")) // ← Цвет текста (задать в Assets)
-    }
-
-    // MARK: - Подсказки
-    private var hintsSection: some View {
-        Section(header: Text(loc("settings.hints"))) {
-            Toggle(loc("settings.hints.showErrors"), isOn: $settings.highlightErrors)
-            Toggle(loc("settings.hints.showTimer"), isOn: $settings.showTimer)
-            Toggle(loc("settings.hints.showLives"), isOn: $settings.showLives)
-        }
     }
 
     // MARK: - Шрифты + Цвет текста
     private var fontsSection: some View {
         Section(header: Text(loc("settings.fonts"))) {
-            
-
             Picker(loc("settings.fonts.select"), selection: $selectedFont) {
                 ForEach(fontManager.availableFonts, id: \.self) { fontName in
                     Text(fontName)
-                        .textStyle(size: 16) // Размер, стиль и цвет шрифта.
+                        .textStyle(size: 16)
                 }
             }
 
-            // ++ Цвет текста
             Picker(loc("settings.textColor.select"), selection: $settings.selectedTextColorName) {
                 ForEach(settings.availableTextColors, id: \.self) { colorName in
                     Text(colorName.capitalized)
-                        .foregroundColor(Color(colorName)) // ++ Цвет — сразу визуально виден
-                }
-            }
-        }
-    }
-
-    // MARK: - Стиль доски
-    private var boardStyleSection: some View {
-        Section(header: Text(loc("settings.board"))) {
-            Picker(loc("settings.board.style"), selection: $settings.selectedBoardStyle) {
-                ForEach(settings.boardStyles, id: \.self) { option in
-                    Text(option)
-                }
-            }
-        }
-    }
-
-    // MARK: - Тема
-    private var themeSection: some View {
-        Section(header: Text(loc("settings.theme"))) {
-            Picker(loc("settings.theme.select"), selection: $settings.selectedTheme) {
-                ForEach(settings.themes, id: \.self) { theme in
-                    Text(theme)
+                        .foregroundColor(Color(colorName))
                 }
             }
         }
@@ -89,8 +54,9 @@ struct SettingsView: View {
                 }
             }
             .onChange(of: settings.language) { newLang in
-                LocalizedBundle.setLanguage(newLang) // ++ Обновляем бандл
-                languageTrigger.toggle()             // ++ Форсим перерисовку
+                LocalizedBundle.setLanguage(newLang)
+                fontManager.updateAvailableFonts(for: newLang)
+                languageTrigger.toggle()
             }
         }
     }
@@ -105,23 +71,22 @@ struct SettingsView: View {
                     } else {
                         MusicManager.shared.stopMusic()
                     }
-                    
                 }
         }
     }
-
-    // MARK: - Таймер
-    private var timerSection: some View {
-        Section(header: Text(loc("settings.timer"))) {
-            Toggle(loc("settings.timer.enable"), isOn: $settings.timerMode)
-            if settings.timerMode {
-                Stepper(value: $settings.maxTime, in: 60...1800, step: 60) {
-                    Text(loc("settings.timer.max")) + Text(": ") + Text(settings.formattedMaxTime())
-                }
+    // MARK: - О проекте
+    private var aboutSection: some View {
+        Section {
+            Button("✨ " + loc("settings.about")) {
+                showAboutSheet = true
             }
+        }
+        .sheet(isPresented: $showAboutSheet) {
+            AboutProjectSheet()
         }
     }
 }
+
 
 #Preview {
     SettingsView()

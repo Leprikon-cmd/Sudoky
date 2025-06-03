@@ -4,6 +4,7 @@ struct StatsView: View {
     let statsManager: StatsManager
     @Binding var path: NavigationPath
     @State private var selectedIndex = 0
+    @State private var showResetAlert = false // Показывать алерт?
     @EnvironmentObject var fontManager: FontManager // Менеджер шрифтов
     @EnvironmentObject var languageManager: LanguageManager // Локализация
 
@@ -54,17 +55,17 @@ struct StatsView: View {
 
                 // ++ Кнопка сброса
                 Button(action: {
-                    statsManager.resetStats()
+                    showResetAlert = true // Показываем подтверждение
                 }) {
                     Text(loc("stats.reset"))
-                        .font(fontManager.font(size: 18)) // ✅ применяем свой шрифт
+                        .font(fontManager.font(size: 18))
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.white.opacity(0.2)) // + немного стилистики
+                                .fill(Color.white.opacity(0.2))
                         )
                 }
                 .padding(.top, 20)
@@ -83,6 +84,14 @@ struct StatsView: View {
                         }
                     }
                 }
+            }
+            .alert(loc("stats.resetConfirmTitle"), isPresented: $showResetAlert) {
+                Button(loc("common.yes"), role: .destructive) {
+                    statsManager.resetStats()
+                }
+                Button(loc("common.no"), role: .cancel) { }
+            } message: {
+                Text(loc("stats.resetConfirmMessage"))
             }
         }
     }

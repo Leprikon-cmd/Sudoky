@@ -112,6 +112,7 @@ class SudokuViewModel: ObservableObject {
 
         board.updateCell(row: selected.row, col: selected.col, with: number)
         board.validateBoard()
+        highlightedValue = number // ✅ Автоматически выделяем все такие же цифры
         objectWillChange.send()
         saveGame()
 

@@ -10,6 +10,7 @@ import SwiftUI
 
 class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
+
     // MARK: - Подсказки
     @AppStorage("highlightErrors") var highlightErrors: Bool = true
     @AppStorage("showTimer") var showTimer: Bool = true
@@ -19,7 +20,7 @@ class SettingsManager: ObservableObject {
     @AppStorage("selectedFont") var selectedFont: String = "Стандартный"
     @AppStorage("selectedBoardStyle") var selectedBoardStyle: String = "Классика"
     @AppStorage("selectedTheme") var selectedTheme: String = "Светлая"
-    
+
     @Published var musicEnabled: Bool = true // Музыка
 
     // ++ Цвет текста
@@ -32,9 +33,10 @@ class SettingsManager: ObservableObject {
     var selectedTextColor: Color {
         Color(selectedTextColorName)
     }
-    
+
     init() {
         registerDefaults()
+        fontManager.updateAvailableFonts(for: language) // ✅ Обновляем шрифты при инициализации
     }
 
     private func registerDefaults() {
@@ -45,11 +47,13 @@ class SettingsManager: ObservableObject {
         UserDefaults.standard.register(defaults: defaults)
     }
 
-
     // MARK: - Звук и язык
-    
     @AppStorage("soundEnabled") var soundEnabled: Bool = true
-    @AppStorage("language") var language: String = Locale.current.language.languageCode?.identifier ?? "ru"
+    @AppStorage("language") var language: String = Locale.current.language.languageCode?.identifier ?? "ru" {
+        didSet {
+            fontManager.updateAvailableFonts(for: language) // ✅ Обновляем доступные шрифты при смене языка
+        }
+    }
 
     // MARK: - Таймер
     @AppStorage("timerMode") var timerMode: Bool = false
@@ -59,7 +63,7 @@ class SettingsManager: ObservableObject {
     let fontOptions = ["Стандартный", "Моноширинный", "Рукописный"]
     let boardStyles = ["Классика", "Минимал", "Япония"]
     let themes = ["Светлая", "Тёмная", "Системная"]
-    let languages = ["ru", "en", "ja"]
+    let languages = ["ru", "en"]
 
     // MARK: - Форматирование времени
     func formattedMaxTime() -> String {
@@ -67,5 +71,7 @@ class SettingsManager: ObservableObject {
         let seconds = maxTime % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-}
 
+    // MARK: - Менеджер шрифтов (синглтон)
+    private let fontManager = FontManager.shared
+}

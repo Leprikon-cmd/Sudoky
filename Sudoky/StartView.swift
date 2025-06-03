@@ -10,6 +10,7 @@ struct StartView: View {
     @EnvironmentObject var languageManager: LanguageManager // Локализация
     @EnvironmentObject var playerProgress: PlayerProgressManager
     @EnvironmentObject var settings: SettingsManager // настройки
+    @FocusState private var isMottoFocused: Bool // Фокус для поля мудрости
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -28,36 +29,53 @@ struct StartView: View {
                         .clipShape(Circle())                  // форма — круг
                 }
                 .padding(.trailing, 35) // отступ справа
-                .padding(.top, 30) // отступ сверху
+                .padding(.top, 25) // отступ сверху
             }
             
             // Оборачиваем всё содержимое в ZStack с фиксированным фоном
-            ZStack {
+                ZStack(alignment: .topLeading) {
+                    // Весь фон для тапа — за пределами облачка
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            isMottoFocused = false
+                        }
                 VStack {
                     Spacer()
                     
-                    // Облачко для мудрости — визуальный блок с возможностью ввода текста
+                    // 🌥️ Облачко для ввода мудрой мысли с поддержкой переноса и плейсхолдером
                     ZStack(alignment: .topLeading) {
-                        RoundedRectangle(cornerRadius: 16) // Радиус скругления углов "облачка"
-                            .fill(Color("TextColor").opacity(0)) // Прозрачность фона
+                        // 🖼️ Фон и рамка
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color("TextColor").opacity(0)) // Прозрачный фон
                             .overlay(
-                                RoundedRectangle(cornerRadius: 16) // Совпадающая рамка
-                                    .stroke(Color("Line").opacity(0.8), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color("Line").opacity(0.8), lineWidth: 1) // Рамка
                             )
-                            .shadow(radius: 3) // Мягкая тень под блоком
-                        
-                        // Поле ввода текста внутри облачка
-                        TextField(loc("start.placeholder.motto"), text: $playerMotto)
-                            .padding()
+                            .shadow(radius: 3) // Мягкая тень
+
+                        // 💬 Плейсхолдер
+                        if playerMotto.isEmpty {
+                            Text(loc("start.placeholder.motto"))
+                                .foregroundColor(.gray)
+                                .padding(10)
+                                .font(fontManager.font(size: 14)) // ✅ Шрифт из FontManager
+                        }
+
+                        // ✍️ Ввод многострочного текста
+                        TextEditor(text: $playerMotto)
+                            .padding(3)
                             .foregroundColor(.black)
-                            .multilineTextAlignment(.leading)
-                            .textStyle(size: 16) // Размер и стиль шрифта.
+                            .font(fontManager.font(size: 14)) // ✅ Шрифт из FontManager
+                            .scrollContentBackground(.hidden) // 🩹 Убираем фон scrollView внутри TextEditor
+                            .background(Color.clear)
+                            .focused($isMottoFocused) // 👈 Привязка фокуса
                     }
-                    .frame(maxWidth: 300, minHeight: 20, maxHeight: 50)
-                    .padding(.bottom, 6)
+                    .frame(maxWidth: 350, minHeight: 60, maxHeight: 60)
+                    .padding(.bottom, 3)
                     
                     // Аватар мудреца
-                    Image("sage_avatar_01")
+                    Image("sage_50")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 200, height: 200)
@@ -66,17 +84,19 @@ struct StartView: View {
                     
                     
                     // 💬 Имя и уровень — имя вводится, уровень отображается справа
-                    HStack(spacing: 4) {
-                        TextField(loc("start.enterName"), text: $playerName)
-                            .textStyle(size: 20)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 180) // 🔧 Ширина поля для имени
-                        
-                        Text("— \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
-                            .textStyle(size: 16)
+                    ZStack {
+                        HStack(spacing: 4) {
+                            TextField(loc("start.enterName"), text: $playerName)
+                                .textStyle(size: 20)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 100) // 🔧 ширина поля
+
+                            Text("— \(String(format: loc("start.levelLong"), playerProgress.currentLevel))")
+                                .textStyle(size: 20)
+                        }
                     }
-                    .frame(maxWidth: .infinity) // ✅ Занимает всю ширину родителя
-                    .multilineTextAlignment(.center) // Центруем строку визуально
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center) // центрируем визуально
                     
                     // ✅ Прогрессбар (путь мудреца)
                     ProgressView(value: progressPercent(), total: 1) // передаём текущий и максимальный прогресс

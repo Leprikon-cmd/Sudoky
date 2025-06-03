@@ -50,3 +50,8 @@
 "start.placeholder.motto" = "Впиши свою мудрость...";
 "start.enterName" = "Твое имя, путник";
 "settings.textColor.select" = "Цвет текста";
+"stats.resetConfirmTitle" = "Сбросить статистику?";
+"stats.resetConfirmMessage" = "Вы уверены, что хотите навсегда удалить всю статистику?";
+"common.yes" = "Да";
+"common.no" = "Нет";
+"settings.about" = "О проекте";
