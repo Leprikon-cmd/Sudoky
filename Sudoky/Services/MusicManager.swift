@@ -25,7 +25,6 @@ class MusicManager: ObservableObject {
 
         do {
             if player?.isPlaying == true {
-                print("🎵 Музыка уже играет — повторный запуск не требуется")
                 return
             }
 
@@ -33,7 +32,6 @@ class MusicManager: ObservableObject {
             player?.numberOfLoops = loop ? -1 : 0
             player?.volume = 0.5
             player?.play()
-            print("🎵 Играет: \(filename)")
         } catch {
             print("❌ Ошибка воспроизведения: \(error.localizedDescription)")
         }
@@ -42,6 +40,5 @@ class MusicManager: ObservableObject {
     /// Останавливает музыку
     func stopMusic() {
         player?.stop()
-        print("⏹ Музыка остановлена")
     }
 }

@@ -43,6 +43,7 @@ struct GameView: View {
     
     // MARK: - Тело View
     var body: some View {
+        let _ = languageManager.language
         ZStack {
             BackgroundView()
                 .ignoresSafeArea()
@@ -108,7 +109,6 @@ struct GameView: View {
             
             // MARK: - Реакция на проигрыш
             .onChange(of: viewModel.isGameOver) { _, newValue in
-                print("🔥 isGameOver changed to \(newValue)")
                 if newValue {
                     let penalty = playerProgressManager.applyLossPenalty()
                     gainedXP = -Int(penalty)
@@ -125,7 +125,6 @@ struct GameView: View {
             
             // MARK: - Реакция на победу
             .onChange(of: viewModel.isGameWon) { _, newValue in
-                print("🔥 isGameWon changed to \(newValue)")
                 if newValue {
                     let xp = playerProgressManager.addXP(
                         difficulty: difficulty,

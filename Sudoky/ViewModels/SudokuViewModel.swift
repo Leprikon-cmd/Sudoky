@@ -128,7 +128,6 @@ class SudokuViewModel: ObservableObject {
         }
 
         if !isGameOver && board.isSolved() {
-            print("🎉 Победа засчитана")
             stopTimer()
             isGameWon = true
             GamePersistenceManager.shared.clear()

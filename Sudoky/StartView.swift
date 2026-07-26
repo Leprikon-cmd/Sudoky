@@ -13,6 +13,7 @@ struct StartView: View {
     @FocusState private var isMottoFocused: Bool // Фокус для поля мудрости
 
     var body: some View {
+        let _ = languageManager.language
         ZStack(alignment: .top) {
             BackgroundView() // Фон
                 .ignoresSafeArea()
@@ -151,7 +152,6 @@ struct StartView: View {
             .padding(.top, 100) // ← Смещение карточки ближе к низу
         }
         .onAppear {
-            //  for name in UIFont.fontNames(forFamilyName: family) {print("🔹 \(name)")}} // Проверка названий шрифтов (если понадобится)
             // 🎵 Запускаем музыку только если она не играет
                 if settings.soundEnabled && !MusicManager.shared.isMusicPlaying {
                     MusicManager.shared.playBackgroundMusic("Aurnis_Luthael")
@@ -190,4 +190,3 @@ struct StartView: View {
     )
     .environmentObject(PlayerProgressManager.shared)
 }
-

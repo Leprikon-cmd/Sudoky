@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct GameAlertsView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     let showWinAlert: Binding<Bool>
     let showLoseAlert: Binding<Bool>
     let gainedXP: Int
@@ -18,6 +19,7 @@ struct GameAlertsView: View {
     let onMenu: () -> Void
 
     var body: some View {
+        let _ = languageManager.language
         ZStack {
             if showWinAlert.wrappedValue {
                 GameCustomAlert(

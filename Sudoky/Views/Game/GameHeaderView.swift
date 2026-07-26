@@ -14,6 +14,7 @@ struct GameHeaderView: View {
     @EnvironmentObject var fontManager: FontManager   // Менеджер шрифтов
 
     var body: some View {
+        let _ = languageManager.language
         VStack(spacing: 4) {
             // + Сложность (в формате "Сложность: Мастер" / "Difficulty: Master")
             Text(String(format: loc("header.difficulty"), difficulty.localizedName))

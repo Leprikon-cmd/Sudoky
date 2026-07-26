@@ -36,7 +36,10 @@ class SettingsManager: ObservableObject {
 
     init() {
         registerDefaults()
-        fontManager.updateAvailableFonts(for: language) // ✅ Обновляем шрифты при инициализации
+        let language = UserDefaults.standard.string(forKey: "language")
+            ?? Locale.current.language.languageCode?.identifier
+            ?? "ru"
+        fontManager.updateAvailableFonts(for: language)
     }
 
     private func registerDefaults() {
@@ -49,12 +52,6 @@ class SettingsManager: ObservableObject {
 
     // MARK: - Звук и язык
     @AppStorage("soundEnabled") var soundEnabled: Bool = true
-    @AppStorage("language") var language: String = Locale.current.language.languageCode?.identifier ?? "ru" {
-        didSet {
-            fontManager.updateAvailableFonts(for: language) // ✅ Обновляем доступные шрифты при смене языка
-        }
-    }
-
     // MARK: - Таймер
     @AppStorage("timerMode") var timerMode: Bool = false
     @AppStorage("maxTime") var maxTime: Int = 600

@@ -8,10 +8,10 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var settings: SettingsManager
     @EnvironmentObject var fontManager: FontManager
+    @EnvironmentObject var languageManager: LanguageManager
 
     @AppStorage("selectedFont") private var selectedFont: String = "System"
     @AppStorage("playerMotto") private var playerMotto: String = ""
-    @State private var languageTrigger = false // ++ Триггер для перерисовки при смене языка
     @State private var showAboutSheet = false
 
     var body: some View {
@@ -48,15 +48,13 @@ struct SettingsView: View {
     // MARK: - Язык
     private var languageSection: some View {
         Section(header: Text(loc("settings.language"))) {
-            Picker(loc("settings.language.select"), selection: $settings.language) {
+            Picker(loc("settings.language.select"), selection: $languageManager.language) {
                 ForEach(settings.languages, id: \.self) { lang in
                     Text(lang.uppercased())
                 }
             }
-            .onChange(of: settings.language) { newLang in
-                LocalizedBundle.setLanguage(newLang)
+            .onChange(of: languageManager.language) { _, newLang in
                 fontManager.updateAvailableFonts(for: newLang)
-                languageTrigger.toggle()
             }
         }
     }

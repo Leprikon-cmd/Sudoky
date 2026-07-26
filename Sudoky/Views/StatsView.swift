@@ -9,6 +9,7 @@ struct StatsView: View {
     @EnvironmentObject var languageManager: LanguageManager // Локализация
 
     var body: some View {
+        let _ = languageManager.language
         ZStack(alignment: .top) {
             BackgroundView() // Фон
                 .ignoresSafeArea()

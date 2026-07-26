@@ -44,12 +44,20 @@
 			);
 			target = 275BD0FB2DCE05CB0014413F /* SudokyUITests */;
 		};
+		2772FB872DD7501200929C79 /* Exceptions for "Sudoky" folder in "Sudoky" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized: Info.plist",
+			);
+			target = 275BD0E42DCE05C70014413F /* Sudoky */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		275BD0E72DCE05C80014413F /* Sudoky */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				2772FB872DD7501200929C79 /* Exceptions for "Sudoky" folder in "Sudoky" target */,
 				2772FB852DD7501200929C79 /* Exceptions for "Sudoky" folder in "SudokyTests" target */,
 				2772FB862DD7501200929C79 /* Exceptions for "Sudoky" folder in "SudokyUITests" target */,
 			);
@@ -214,10 +222,6 @@
 				en,
 				Base,
 				ru,
-				de,
-				fr,
-				es,
-				be,
 			);
 			mainGroup = 275BD0DC2DCE05C70014413F;
 			minimizedProjectReferenceProxies = 1;
@@ -429,8 +433,8 @@
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 73P89VLQ3W;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "/Users/ez/Проекты/Sudoky/Sudoky/Sudoky/Base.lproj/info.plist";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sudoky/Base.lproj/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Судоку";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -461,8 +465,8 @@
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 73P89VLQ3W;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "/Users/ez/Проекты/Sudoky/Sudoky/Sudoky/Base.lproj/info.plist";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sudoky/Base.lproj/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Судоку";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

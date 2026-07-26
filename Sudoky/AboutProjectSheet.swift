@@ -10,57 +10,59 @@ import SwiftUI
 
 struct AboutProjectSheet: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var languageManager: LanguageManager
     
     var body: some View {
+        let _ = languageManager.language
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     Group {
-                        Text("Судоку. Путь мудреца")
+                        Text(loc("about.appName"))
                             .font(.title2.bold())
 
-                        Text("Автор идеи и реализации — Евгений Зотчик aka Leprikon")
+                        Text(loc("about.author"))
 
-                        Text("Благодарности:")
-                        Text("— Моей любимой Наташе aka AQUA — за вдохновение сделать честную, бесплатную игру без надоедливой рекламы.")
-                        Text("— Композитору Anna Aurnis (Aurnis Luthael) — за магическую музыку, использованную с её разрешения.")
-                        Text("— Лисе — за живые обводки для цифр и поддержку.")
-                        Text("— Команде тестировщиков: Кирилл, Злата, AQUA, Лиса — спасибо за внимательность и тепло.")
+                        Text(loc("about.acknowledgements"))
+                        Text(loc("about.thanks.natasha"))
+                        Text(loc("about.thanks.composer"))
+                        Text(loc("about.thanks.fox"))
+                        Text(loc("about.thanks.testers"))
 
-                        Text("🤖 Моя команда нейросетевых помощников:")
-                        Text("— ChatGPT (OpenAI): интерфейс, логика, идеи — главный программист и просто хороший товарищ.")
-                        Text("— Шедеврум (Яндекс) и немного ChatGPT — художники мазков и текстур.")
-                        Text("— Промт-инженер Deepseek — чтобы не отвлекать программиста от кода 🙂")
+                        Text(loc("about.aiTeam"))
+                        Text(loc("about.ai.chatgpt"))
+                        Text(loc("about.ai.shedevrum"))
+                        Text(loc("about.ai.deepseek"))
 
-                        Text("О проекте:")
-                        Text("Этот проект — путь. Это некоммерческая игра, созданная из любви к тишине, числам и гармонии.")
-                        Text("Игра навсегда останется бесплатной и никогда не будет показывать рекламу.")
-                        Text("Поддержка и развитие — по вдохновению.")
+                        Text(loc("about.description.title"))
+                        Text(loc("about.description.body"))
+                        Text(loc("about.description.free"))
+                        Text(loc("about.description.support"))
                     }
 
                     Divider()
 
                     Group {
-                        Text("Как играть")
+                        Text(loc("about.howToPlay.title"))
                             .font(.title3.bold())
 
-                        Text("• Выберите уровень сложности от «Новичка» до Сенсея. Режимы отличаются количеством скрытых цифр и количеством \"жизней\" — то есть шансов на ошибку и невнимательность, тут есть подсказки.")
-                        Text("• Режим \"Докушин\" — это вызов самому себе: без права на ошибку, без подсказок в виде подсветки цифр.")
-                        Text("• Очки начисляются за скорость, чистоту прохождения и выбранную сложность.")
-                        Text("• Прогресс сохраняется — вы всегда можете вернуться к своей партии.")
+                        Text(loc("about.howToPlay.chooseDifficulty"))
+                        Text(loc("about.howToPlay.dokushin"))
+                        Text(loc("about.howToPlay.points"))
+                        Text(loc("about.howToPlay.saved"))
 
-                        Text("Будьте мудры и терпеливы. Судоку — это путь.")
+                        Text(loc("about.closing"))
                         
-                        Text("Обратная связь с автором: zotchik.e.i@gmail.com")
+                        Text(loc("about.contact"))
                     }
                 }
                 .padding()
                 .textStyle(size: 16)
             }
-            .navigationTitle("✨ О проекте")
+            .navigationTitle(loc("about.title"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") {
+                    Button(loc("about.close")) {
                         dismiss()
                     }
                 }

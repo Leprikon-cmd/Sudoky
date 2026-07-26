@@ -79,7 +79,6 @@ class FontManager: ObservableObject {
     func updateAvailableFonts(for language: String) {
         if language == "ru" {
             availableFonts = allFonts.filter { fontSupportsCyrillic($0) }
-            print("✅ Поддерживаемые шрифты для \(language): \(availableFonts)")
         } else {
             availableFonts = allFonts
         }
