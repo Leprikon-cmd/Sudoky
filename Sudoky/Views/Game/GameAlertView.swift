@@ -10,11 +10,14 @@ struct GameAlertsView: View {
     @EnvironmentObject var languageManager: LanguageManager
     let showWinAlert: Binding<Bool>
     let showLoseAlert: Binding<Bool>
-    let gainedXP: Int
     let elapsedTime: TimeInterval
     let flawless: Bool
+    let difficulty: Difficulty
+    let livesRemaining: Int
+    let hasAvailableDevelopment: Bool
     let onRestart: () -> Void
     let onNewGame: () -> Void
+    let onGarden: () -> Void
     let onStats: () -> Void
     let onMenu: () -> Void
 
@@ -22,38 +25,30 @@ struct GameAlertsView: View {
         let _ = languageManager.language
         ZStack {
             if showWinAlert.wrappedValue {
-                GameCustomAlert(
-                    title: loc("alert.win.title"),
-                    message: String(format: loc("alert.win.message"), formatTime(elapsedTime), gainedXP),
-                    actions: [
-                        AlertAction(title: loc("alert.restart"), handler: onRestart),
-                        AlertAction(title: loc("alert.newGame"), handler: onNewGame),
-                        AlertAction(title: loc("alert.stats"), handler: onStats),
-                        AlertAction(title: loc("alert.menu"), handler: onMenu)
-                    ],
-                    isPresented: showWinAlert
+                VictoryView(
+                    difficulty: difficulty,
+                    elapsedTime: elapsedTime,
+                    errorCount: max(0, difficulty.lives - livesRemaining),
+                    hasAvailableDevelopment: hasAvailableDevelopment,
+                    onNewGame: onNewGame,
+                    onGarden: onGarden,
+                    onHome: onMenu
                 )
-            }
-
-            if showLoseAlert.wrappedValue {
-                GameCustomAlert(
-                    title: loc("alert.lose.title"),
-                    message: String(format: loc("alert.lose.message"), abs(gainedXP)),
-                    actions: [
-                        AlertAction(title: loc("alert.restart"), handler: onRestart),
-                        AlertAction(title: loc("alert.newGame"), handler: onNewGame),
-                        AlertAction(title: loc("alert.stats"), handler: onStats),
-                        AlertAction(title: loc("alert.menu"), handler: onMenu)
-                    ],
-                    isPresented: showLoseAlert
+            } else if showLoseAlert.wrappedValue {
+                DefeatView(
+                    difficulty: difficulty,
+                    elapsedTime: elapsedTime,
+                    errorCount: max(0, difficulty.lives - livesRemaining),
+                    onRestart: {
+                        showLoseAlert.wrappedValue = false
+                        onRestart()
+                    },
+                    onNewGame: onNewGame,
+                    onStats: onStats,
+                    onHome: onMenu
                 )
             }
         }
     }
 
-    private func formatTime(_ seconds: TimeInterval) -> String {
-        let minutes = Int(seconds) / 60
-        let secs = Int(seconds) % 60
-        return String(format: "%02d:%02d", minutes, secs)
-    }
 }

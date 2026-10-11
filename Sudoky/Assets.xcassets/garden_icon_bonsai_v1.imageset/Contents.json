@@ -1,0 +1,13 @@
+{
+  "images" : [
+    {
+      "filename" : "garden_icon_bonsai_v1.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

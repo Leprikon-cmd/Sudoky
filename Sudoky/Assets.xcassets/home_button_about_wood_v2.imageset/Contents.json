@@ -1,0 +1,13 @@
+{
+  "images": [
+    {
+      "filename": "home_button_about_wood_v2.png",
+      "idiom": "universal",
+      "scale": "1x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

@@ -1,72 +1,108 @@
-//
-//  AboutProjectSheet.swift
-//  Sudoky
-//
-//  Created by Евгений Зотчик on 03.06.2025.
-//
-//  Показывает информацию об авторах и игре
-
 import SwiftUI
 
 struct AboutProjectSheet: View {
-    @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var languageManager: LanguageManager
-    
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var languageManager: LanguageManager
+
+    @ScaledMetric(relativeTo: .body) private var headingFontSize: CGFloat = 22
+    @ScaledMetric(relativeTo: .body) private var bodyFontSize: CGFloat = 17
+
     var body: some View {
         let _ = languageManager.language
+
         NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Group {
-                        Text(loc("about.appName"))
-                            .font(.title2.bold())
+            ZStack {
+                BackgroundView()
+                    .ignoresSafeArea()
 
-                        Text(loc("about.author"))
+                ScrollView(.vertical) {
+                    VStack(spacing: 16) {
+                        PaperSectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                heading("about.appName", size: 24)
+                                paragraph("about.author")
+                            }
+                        }
 
-                        Text(loc("about.acknowledgements"))
-                        Text(loc("about.thanks.natasha"))
-                        Text(loc("about.thanks.composer"))
-                        Text(loc("about.thanks.fox"))
-                        Text(loc("about.thanks.testers"))
+                        PaperSectionCard {
+                            VStack(alignment: .leading, spacing: 6) {
+                                heading("about.acknowledgements")
+                                paragraph("about.thanks.natasha")
+                                paragraph("about.thanks.composer")
+                                paragraph("about.thanks.fox")
+                                paragraph("about.thanks.testers")
+                            }
+                        }
 
-                        Text(loc("about.aiTeam"))
-                        Text(loc("about.ai.chatgpt"))
-                        Text(loc("about.ai.shedevrum"))
-                        Text(loc("about.ai.deepseek"))
+                        PaperSectionCard {
+                            VStack(alignment: .leading, spacing: 6) {
+                                heading("about.aiTeam")
+                                paragraph("about.ai.chatgpt")
+                                paragraph("about.ai.shedevrum")
+                                paragraph("about.ai.deepseek")
+                            }
+                        }
 
-                        Text(loc("about.description.title"))
-                        Text(loc("about.description.body"))
-                        Text(loc("about.description.free"))
-                        Text(loc("about.description.support"))
+                        PaperSectionCard {
+                            VStack(alignment: .leading, spacing: 6) {
+                                heading("about.description.title")
+                                paragraph("about.description.body")
+                                paragraph("about.description.free")
+                                paragraph("about.description.support")
+                            }
+                        }
+
+                        PaperSectionCard {
+                            VStack(alignment: .leading, spacing: 6) {
+                                heading("about.howToPlay.title")
+                                paragraph("about.howToPlay.chooseDifficulty")
+                                paragraph("about.howToPlay.dokushin")
+                                paragraph("about.howToPlay.points")
+                                paragraph("about.howToPlay.saved")
+                            }
+                        }
+
+                        PaperSectionCard {
+                            VStack(alignment: .leading, spacing: 6) {
+                                paragraph("about.closing")
+                                paragraph("about.contact")
+                            }
+                        }
                     }
-
-                    Divider()
-
-                    Group {
-                        Text(loc("about.howToPlay.title"))
-                            .font(.title3.bold())
-
-                        Text(loc("about.howToPlay.chooseDifficulty"))
-                        Text(loc("about.howToPlay.dokushin"))
-                        Text(loc("about.howToPlay.points"))
-                        Text(loc("about.howToPlay.saved"))
-
-                        Text(loc("about.closing"))
-                        
-                        Text(loc("about.contact"))
-                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 20)
+                    .frame(maxWidth: 600)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding()
-                .textStyle(size: 16)
+                .scrollIndicators(.hidden)
             }
             .navigationTitle(loc("about.title"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(loc("about.close")) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text(loc("about.close"))
+                            .textStyle(size: bodyFontSize)
                     }
                 }
             }
         }
+    }
+
+    private func heading(_ key: String, size: CGFloat? = nil) -> some View {
+        Text(loc(key))
+            .textStyle(size: size ?? headingFontSize)
+            .fontWeight(.semibold)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private func paragraph(_ key: String) -> some View {
+        Text(loc(key))
+            .textStyle(size: bodyFontSize)
+            .lineSpacing(5)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }

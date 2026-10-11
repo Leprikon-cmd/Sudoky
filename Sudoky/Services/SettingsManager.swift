@@ -52,6 +52,9 @@ class SettingsManager: ObservableObject {
 
     // MARK: - Звук и язык
     @AppStorage("soundEnabled") var soundEnabled: Bool = true
+#if DEBUG
+    @AppStorage("testModeEnabled") var testModeEnabled: Bool = false
+#endif
     // MARK: - Таймер
     @AppStorage("timerMode") var timerMode: Bool = false
     @AppStorage("maxTime") var maxTime: Int = 600

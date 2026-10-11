@@ -11,6 +11,18 @@ struct SudokuGenerator {
         removeCells(&board, for: difficulty)
         return board
     }
+
+#if DEBUG
+    static func generateTestBoard() -> [[Int]] {
+        var board = Array(repeating: Array(repeating: 0, count: 9), count: 9)
+        precondition(fillBoard(&board), "Не удалось заполнить тестовую доску")
+
+        let row = Int.random(in: 0..<9)
+        let col = Int.random(in: 0..<9)
+        board[row][col] = 0
+        return board
+    }
+#endif
     
     private static func fillBoard(_ board: inout [[Int]]) -> Bool {
         for row in 0..<9 {

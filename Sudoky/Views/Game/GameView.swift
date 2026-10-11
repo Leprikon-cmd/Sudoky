@@ -10,12 +10,12 @@ struct GameView: View {
     @Binding var path: NavigationPath                 // Навигационный стек
     @EnvironmentObject var fontManager: FontManager   // Менеджер шрифтов
     @EnvironmentObject var languageManager: LanguageManager // Локализация
+    @EnvironmentObject private var gardenManager: GardenManager
 
     
     @StateObject private var viewModel: SudokuViewModel   // ViewModel игры
     @State private var showWinAlert = false               // Показывать алерт победы?
     @State private var showLoseAlert = false              // Показывать алерт проигрыша?
-    @State private var gainedXP: Int = 0                  // Опыт, полученный за партию
     
     // MARK: - Инициализация из сохранения
     init(savedGame: SavedGame, statsManager: StatsManager, playerProgressManager: PlayerProgressManager, path: Binding<NavigationPath>) {
@@ -92,17 +92,12 @@ struct GameView: View {
                 Spacer(minLength: 16)
             }
             .padding(.top, 16)
+            .allowsHitTesting(!viewModel.isGameWon && !viewModel.isGameOver)
             .navigationBarBackButtonHidden(true)
             .toolbar {
-                // 🔙 Кастомная кнопка «Назад» (заменяет стандартную)
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
+                if !viewModel.isGameWon {
+                    AppBackToolbarItem {
                         path.removeLast()
-                    }) {
-                        Image("wooden_back")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 40)
                     }
                 }
             }
@@ -110,9 +105,6 @@ struct GameView: View {
             // MARK: - Реакция на проигрыш
             .onChange(of: viewModel.isGameOver) { _, newValue in
                 if newValue {
-                    let penalty = playerProgressManager.applyLossPenalty()
-                    gainedXP = -Int(penalty)
-                    
                     statsManager.recordGame(
                         difficulty: difficulty,
                         won: false,
@@ -126,12 +118,11 @@ struct GameView: View {
             // MARK: - Реакция на победу
             .onChange(of: viewModel.isGameWon) { _, newValue in
                 if newValue {
-                    let xp = playerProgressManager.addXP(
+                    playerProgressManager.addXP(
                         difficulty: difficulty,
                         livesRemaining: viewModel.livesRemaining,
                         elapsedTime: viewModel.elapsedTime
                     )
-                    gainedXP = Int(xp)
                     
                     statsManager.recordGame(
                         difficulty: difficulty,
@@ -148,11 +139,14 @@ struct GameView: View {
                 GameAlertsView(
                     showWinAlert: $showWinAlert,
                     showLoseAlert: $showLoseAlert,
-                    gainedXP: gainedXP,
                     elapsedTime: viewModel.elapsedTime,
                     flawless: viewModel.livesRemaining == difficulty.lives,
+                    difficulty: difficulty,
+                    livesRemaining: viewModel.livesRemaining,
+                    hasAvailableDevelopment: gardenManager.hasAvailableDevelopment,
                     onRestart: restartGame,
                     onNewGame: { path.append(Route.difficulty) },
+                    onGarden: { path.append(Route.garden) },
                     onStats: { path.append(Route.stats) },
                     onMenu: { path.removeLast(path.count) }
                 )

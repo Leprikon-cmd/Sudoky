@@ -12,6 +12,7 @@ enum Route: Hashable {
     case settings
     case game(Difficulty)
     case resume
+    case garden
 }
 
 struct RootView: View {
@@ -20,6 +21,7 @@ struct RootView: View {
     @StateObject var settingsManager = SettingsManager()
     @StateObject var fontManager = FontManager.shared
     @StateObject var playerProgressManager = PlayerProgressManager.shared
+    @StateObject private var gardenManager = GardenManager.shared
     @StateObject private var languageManager = LanguageManager()
 
     @State private var path = NavigationPath()
@@ -57,6 +59,9 @@ struct RootView: View {
                         } else {
                             StartView(statsManager: statsManager, path: $path)
                         }
+
+                    case .garden:
+                        GardenView(path: $path)
                     }
                 }
         }
@@ -65,6 +70,7 @@ struct RootView: View {
         .environmentObject(settingsManager)
         .environmentObject(fontManager)
         .environmentObject(playerProgressManager)
+        .environmentObject(gardenManager)
         .environmentObject(languageManager) // ✅ Передаём язык глобально
     }
 }

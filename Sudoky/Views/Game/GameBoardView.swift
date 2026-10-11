@@ -15,9 +15,10 @@ struct GameBoardView: View {
             let isPad = UIDevice.current.userInterfaceIdiom == .pad
 
             // + уменьшаем ширину на iPad (на 25%)
-            let frameSize = isPad ? screenWidth * 0.75 : screenWidth // ++ Размер доски
-            let insetRatio: CGFloat = 0.045 // + коэффициент пустой зоны внутри рамки
-            let gridSize = frameSize * (1 - insetRatio * 2) // ++ внутренняя область под ячейки
+            let frameSize = isPad ? screenWidth * 0.75 : screenWidth - 4 // Уменьшаем поле на 4 pt.
+            let frameInset: CGFloat = 5
+            let frameCorrection: CGFloat = isPad ? 12 : 10
+            let gridSize = frameSize - frameInset * 2
             let cellSize = gridSize / 9 // ++ размер одной ячейки
 
             ZStack {
@@ -49,14 +50,20 @@ struct GameBoardView: View {
                     GridLinesOverlay(gridSize: gridSize)
                 }
                 .frame(width: gridSize, height: gridSize)
-                .cornerRadius(16)
                 .clipped()
 
-                // 🎨 Рамка — поверх всего
-                Image("Frame3")
+                // Тонкая деревянная рамка оставляет сетку главным элементом экрана.
+                Image("game_board_frame_thin")
                     .resizable()
-                    .aspectRatio(1, contentMode: .fit)
-                    .frame(width: frameSize, height: frameSize)
+                    .scaledToFit()
+                    .frame(
+                        width: frameSize + frameCorrection,
+                        height: frameSize + frameCorrection
+                    )
+                    .offset(
+                        x: -frameCorrection / 2,
+                        y: frameCorrection / 2
+                    )
                     .allowsHitTesting(false)
             }
             .frame(width: frameSize, height: frameSize)
@@ -64,6 +71,7 @@ struct GameBoardView: View {
         }
         .aspectRatio(1, contentMode: .fit) // поле и рамка всегда квадратные
     }
+
     // MARK: - Сетка линий поверх поля
     private struct GridLinesOverlay: View {
         let gridSize: CGFloat

@@ -54,16 +54,6 @@ class PlayerProgressManager: ObservableObject {
         return gainedXP
     }
     
-    /// Применяет штраф за поражение — вычитает 1% от текущего уровня XP
-    @discardableResult
-    func applyLossPenalty() -> Double {
-        let penalty = max(1.0, Double(currentLevel)) * 0.01
-        currentXP = max(0, currentXP - penalty)
-        updateLevel()
-        save()
-        return penalty
-    }
-
     /// Обновляет текущий уровень, если достаточно XP
     private func updateLevel() {
         var level = 1

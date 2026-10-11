@@ -7,21 +7,28 @@
 import SwiftUI
 
 struct BackgroundView: View {
-    @State private var imageName: String = "scroll1"
+    private static let imageNames = ["background1", "background2", "background3", "background4", "background5"]
+
+    @State private var imageName: String
+    @State private var hasAppeared = false
+
+    init() {
+        _imageName = State(initialValue: Self.imageNames.randomElement() ?? "background1")
+    }
     
     var body: some View {
         GeometryReader { geo in
             Image(imageName)
                 .resizable()
                 .scaledToFill()
-                .scaleEffect(1.2) // ← увеличивает изображение
                 .frame(width: geo.size.width, height: geo.size.height)
                 .clipped()
                 .ignoresSafeArea()
                 .onAppear {
-                    // Выбор случайного изображения при каждом появлении
-                    let randomIndex = Int.random(in: 1...13)
-                    imageName = "scroll\(randomIndex)"
+                    if hasAppeared {
+                        imageName = Self.imageNames.randomElement() ?? imageName
+                    }
+                    hasAppeared = true
                 }
         }
     }

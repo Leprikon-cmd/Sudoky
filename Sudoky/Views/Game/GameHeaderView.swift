@@ -20,11 +20,14 @@ struct GameHeaderView: View {
             Text(String(format: loc("header.difficulty"), difficulty.localizedName))
                 .textStyle(size: 14) // Размер, стиль и цвет шрифта.
 
-            // + Жизни (🔔)
+            // + Жизни
             HStack(spacing: 4) {
                 ForEach(0..<livesRemaining, id: \.self) { _ in
-                    Text("🔔")
-                        .foregroundColor(.red)
+                    Image("life_enso")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                        .accessibilityHidden(true)
                 }
             }
 

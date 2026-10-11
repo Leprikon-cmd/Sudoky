@@ -40,7 +40,7 @@ class SudokuViewModel: ObservableObject {
         self.livesRemaining = difficulty.lives
         self.elapsedTime = 0
 
-        let matrix = SudokuGenerator.generate(difficulty: difficulty)
+        let matrix = Self.generateNewBoard(for: difficulty)
         self.board = SudokuBoard(from: matrix)
 
         startTimer()
@@ -84,6 +84,15 @@ class SudokuViewModel: ObservableObject {
             }
     }
 
+    private static func generateNewBoard(for difficulty: Difficulty) -> [[Int]] {
+#if DEBUG
+        if SettingsManager.shared.testModeEnabled {
+            return SudokuGenerator.generateTestBoard()
+        }
+#endif
+        return SudokuGenerator.generate(difficulty: difficulty)
+    }
+
     func stopTimer() {
         timerCancellable?.cancel()
     }
@@ -97,7 +106,7 @@ class SudokuViewModel: ObservableObject {
     
     func restartGame(with difficulty: Difficulty) {
         stopTimer()
-        let matrix = SudokuGenerator.generate(difficulty: difficulty)
+        let matrix = Self.generateNewBoard(for: difficulty)
         self.board = SudokuBoard(from: matrix)
         self.elapsedTime = 0
         self.highlightedValue = nil
