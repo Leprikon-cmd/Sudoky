@@ -51,9 +51,14 @@ Apple: [CA92.1 — собственные данные приложения](htt
 
 Проект подготовлен; итоговая чистая ArchiveAction Release для generic iOS
 завершилась exit0 без предупреждений. Архив arm64 версии2/сборки5:
-соседняя папка `../Сборки/Sudoky-2-5-20261012.xcarchive`
+соседняя папка `../Сборки/Sudoky-2-5-20261012.xcarchive.zip`
 относительно Git-корня Sudoky/. Архив сохранён вне Git-корня и app sources.
-Полный путь: `/Users/zotchik/Documents/2. Репозиторий/Sudoky/Сборки/Sudoky-2-5-20261012.xcarchive`.
+Полный путь: `/Users/zotchik/Documents/2. Репозиторий/Sudoky/Сборки/Sudoky-2-5-20261012.xcarchive.zip`.
+ZIP создан без FinderInfo/resource forks/extended attrs; тест ZIP и проверка
+подписи после распаковки в /private/tmp прошли. Внутри пакет называется
+Sudoky-2-5-testflight-20261012.xcarchive. Documents автоматически добавляет
+служебные метки к незапакованной .app; такую копию перенесли в /private/tmp,
+не оставили как готовый результат. Исходный проверенный архив и ZIP целы.
 
 Архив имеет проверенную Apple Development подпись Team73P89VLQ3W,
 не App Store distribution подпись. Экспорт/валидация App Store Connect,
