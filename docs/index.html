@@ -15,6 +15,12 @@
   <script src="script.js" defer></script>
 </head>
 <body>
+  <nav class="section-nav" aria-label="Оглавление страницы / Page contents">
+    <a href="#features">Возможности <span lang="en">Features</span></a>
+    <a href="#screenshots">Скриншоты <span lang="en">Screenshots</span></a>
+    <a href="#testflight">TestFlight</a>
+    <a href="#community">Сообщество <span lang="en">Community</span></a>
+  </nav>
   <main>
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero__content reveal">
@@ -37,7 +43,7 @@
       </a>
     </section>
 
-    <section class="product-copy" aria-labelledby="features-title">
+    <section class="product-copy" id="features" aria-labelledby="features-title">
       <p class="eyebrow">В своём ритме · At your own pace</p>
       <h2 id="features-title">Одна сетка.<br>Много путей к ясности.</h2>
       <p class="intro">Классическая головоломка, в которой важны внимание и удовольствие от найденного решения. Выберите подходящую сложность, сделайте заметки и продолжите партию тогда, когда захотите.</p>
@@ -48,7 +54,7 @@
         <article><h3>Ваш собственный путь</h3><p>Следите за прохождениями, победами и лучшим временем в статистике. Игра работает офлайн.</p><p lang="en">Track completed games, wins, and best times. Play offline.</p></article>
       </div>
     </section>
-    <section class="showcase" id="app" aria-labelledby="showcase-title">
+    <section class="showcase" id="screenshots" aria-labelledby="showcase-title">
       <div class="showcase__heading reveal">
         <p class="eyebrow">Clarity. Patience. Peace.</p>
         <h2 id="showcase-title">Присмотритесь к деталям.</h2>
@@ -70,7 +76,7 @@
       </div>
       <p class="promise reveal">Made with care for people who love sudoku. Free, private, and distraction-free.</p>
     </section>
-    <section class="product-copy beta" aria-labelledby="beta-title">
+    <section class="product-copy beta" id="testflight" aria-labelledby="beta-title">
       <p class="eyebrow">Следующая глава · The next chapter</p>
       <h2 id="beta-title">Попробуйте новую версию.</h2>
       <p class="intro">В TestFlight можно познакомиться с тестовой версией и помочь автору заметить то, что требует внимания. Это отдельная предварительная сборка: её оформление и возможности могут отличаться от версии в App Store.</p>
@@ -78,7 +84,7 @@
       <a class="button button--primary" href="https://testflight.apple.com/join/79h61gr7" target="_blank" rel="noopener noreferrer">Присоединиться к TestFlight ↗</a>
       <p class="support__note">Для установки потребуется приложение Apple TestFlight. Доступность мест определяется страницей тестирования.</p>
     </section>
-    <section class="support" aria-labelledby="support-title">
+    <section class="support" id="community" aria-labelledby="support-title">
       <div>
         <p class="eyebrow">Community · Сообщество</p>
         <h2 id="support-title">Судоку. Путь мудреца</h2>
