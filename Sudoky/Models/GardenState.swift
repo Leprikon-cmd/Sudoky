@@ -6,8 +6,11 @@ enum GardenSpecies: String, CaseIterable, Codable, Hashable {
     case fir
     case maple
     case beech
+    case apple
 
-    var isCurrentlyPlantable: Bool { self == .oak || self == .beech }
+    static let orderedGardenSpecies: [GardenSpecies] = [.oak, .beech, .maple, .juniper, .apple]
+
+    var isCurrentlyPlantable: Bool { Self.orderedGardenSpecies.contains(self) }
 }
 
 struct GardenTree: Codable, Equatable, Identifiable {
@@ -68,9 +71,17 @@ struct GardenState: Codable, Equatable {
     }
 
     var displayedTreeSpecies: [GardenSpecies] {
-        GardenSpecies.allCases.filter { species in
+        GardenSpecies.orderedGardenSpecies.filter { species in
             trees.first(where: { $0.species == species })?.imageAssetName != nil
         }
+    }
+
+    func adjacentGardenSlot(from species: GardenSpecies, direction: Int) -> GardenSpecies? {
+        guard direction != 0,
+              let index = GardenSpecies.orderedGardenSpecies.firstIndex(of: species) else { return nil }
+        let ordered = GardenSpecies.orderedGardenSpecies
+        let next = (index + (direction > 0 ? 1 : -1) + ordered.count) % ordered.count
+        return ordered[next]
     }
 
     func adjacentDisplayedTreeSpecies(from species: GardenSpecies, direction: Int) -> GardenSpecies? {
@@ -214,8 +225,10 @@ final class GardenStateRepository {
 
     private let persistence: GardenPersistence
     private let storageKey: String
+    private let lastViewedStorageKey: String
     private(set) var state: GardenState?
     private(set) var issue: GardenStorageIssue?
+    private(set) var lastViewedSpecies: GardenSpecies = .oak
 
     init(
         persistence: GardenPersistence,
@@ -224,7 +237,9 @@ final class GardenStateRepository {
     ) {
         self.persistence = persistence
         self.storageKey = storageKey
+        self.lastViewedStorageKey = "\(storageKey).lastViewedSpecies"
         load(currentLevel: currentLevel)
+        loadLastViewedSpecies()
     }
 
     @discardableResult
@@ -234,12 +249,34 @@ final class GardenStateRepository {
 
     @discardableResult
     func plant(_ species: GardenSpecies) -> GardenTransitionResult {
-        update { $0.plant(species) }
+        let result = update { $0.plant(species) }
+        guard result == .changed else { return result }
+        return persistLastViewedSpecies(species) ? .changed : .unavailable
     }
 
     @discardableResult
     func selectTree(_ species: GardenSpecies) -> GardenTransitionResult {
-        update { $0.selectTree(species) }
+        guard species.isCurrentlyPlantable,
+              state?.trees.contains(where: { $0.species == species }) == true else {
+            return species.isCurrentlyPlantable ? .noSelectedTree : .unsupportedSpecies
+        }
+        let viewChanged = lastViewedSpecies != species
+        guard persistLastViewedSpecies(species) else { return .unavailable }
+        let result = update { $0.selectTree(species) }
+        guard result != .unavailable else { return result }
+        return result == .changed || viewChanged ? .changed : .unchanged
+    }
+
+    @discardableResult
+    func selectSlot(_ species: GardenSpecies) -> GardenTransitionResult {
+        guard species.isCurrentlyPlantable else { return .unsupportedSpecies }
+        guard issue == nil, state != nil else { return .unavailable }
+        if state?.trees.contains(where: { $0.species == species }) == true {
+            return selectTree(species)
+        }
+        let changed = lastViewedSpecies != species
+        guard persistLastViewedSpecies(species) else { return .unavailable }
+        return changed ? .changed : .unchanged
     }
 
     @discardableResult
@@ -251,7 +288,9 @@ final class GardenStateRepository {
     func reload(currentLevel: Int) -> GardenTransitionResult {
         state = nil
         issue = nil
+        lastViewedSpecies = .oak
         load(currentLevel: currentLevel)
+        loadLastViewedSpecies()
         return issue == nil ? .changed : .unavailable
     }
 
@@ -282,15 +321,32 @@ final class GardenStateRepository {
 
     @discardableResult
     func resetForTestMode() -> GardenTransitionResult {
-        let freshState = GardenState.migrated(currentLevel: 1)
+        resetGarden(to: .migrated(currentLevel: 1))
+    }
+
+    @discardableResult
+    func resetDebugTestGarden() -> GardenTransitionResult {
+        var freshState = GardenState.migrated(currentLevel: 1)
+        freshState.availableActions = 100
+        return resetGarden(to: freshState)
+    }
+
+    private func resetGarden(to freshState: GardenState) -> GardenTransitionResult {
         guard freshState.isValid else {
             issue = .invalidState
             return .unavailable
         }
 
         do {
-            try persist(freshState)
+            try persistence.write(Data(GardenSpecies.oak.rawValue.utf8), forKey: lastViewedStorageKey)
+            do {
+                try persist(freshState)
+            } catch {
+                try? persistence.write(Data(lastViewedSpecies.rawValue.utf8), forKey: lastViewedStorageKey)
+                throw error
+            }
             state = freshState
+            lastViewedSpecies = .oak
             issue = nil
             return .changed
         } catch {
@@ -327,6 +383,54 @@ final class GardenStateRepository {
         } catch {
             issue = .writeFailed
             return .unavailable
+        }
+    }
+
+    private func loadLastViewedSpecies() {
+        let selectedPlantedSpecies = state?.selectedSpecies.flatMap { selected in
+            GardenSpecies.orderedGardenSpecies.contains(selected)
+                && state?.trees.contains(where: { $0.species == selected }) == true
+                ? selected
+                : nil
+        }
+        let storedSpecies: GardenSpecies?
+        if case .data(let data) = persistence.read(lastViewedStorageKey),
+           let rawValue = String(data: data, encoding: .utf8),
+           let decoded = GardenSpecies(rawValue: rawValue),
+           GardenSpecies.orderedGardenSpecies.contains(decoded) {
+            storedSpecies = decoded
+        } else {
+            storedSpecies = nil
+        }
+        lastViewedSpecies = storedSpecies ?? selectedPlantedSpecies ?? .oak
+
+        guard state?.trees.contains(where: { $0.species == lastViewedSpecies }) == true,
+              state?.selectedSpecies != lastViewedSpecies,
+              var updated = state else { return }
+        updated.selectedSpecies = lastViewedSpecies
+        guard updated.isValid else {
+            issue = .invalidState
+            return
+        }
+        do {
+            try persist(updated)
+            state = updated
+        } catch {
+            issue = .writeFailed
+        }
+    }
+
+    @discardableResult
+    private func persistLastViewedSpecies(_ species: GardenSpecies) -> Bool {
+        guard species.isCurrentlyPlantable else { return false }
+        guard lastViewedSpecies != species else { return issue == nil }
+        do {
+            try persistence.write(Data(species.rawValue.utf8), forKey: lastViewedStorageKey)
+            lastViewedSpecies = species
+            return true
+        } catch {
+            issue = .writeFailed
+            return false
         }
     }
 

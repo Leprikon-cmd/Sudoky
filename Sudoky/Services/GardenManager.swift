@@ -18,19 +18,36 @@ final class GardenManager: ObservableObject {
     )
 
 #if DEBUG
+    private static let debugSeedMarker = "gardenDebugSeeded100Actions"
+
+    static func effectiveRootManager(
+        testModeEnabled: Bool,
+        workingManager: GardenManager,
+        debugManager: GardenManager?
+    ) -> GardenManager? {
+        testModeEnabled ? debugManager : workingManager
+    }
+
+    static func makeIsolatedManager(defaults: UserDefaults, storageKey: String, isDebugSandbox: Bool) -> GardenManager {
+        GardenManager(
+            defaults: defaults,
+            storageKey: storageKey,
+            progressManager: nil,
+            isDebugSandbox: isDebugSandbox
+        )
+    }
+
     static let debugShared: GardenManager? = {
         guard let defaults = UserDefaults(suiteName: "com.sudoky.garden-debug") else { return nil }
-        return GardenManager(
-            defaults: defaults,
-            storageKey: "gardenDebugState",
-            progressManager: nil,
-            isDebugSandbox: true
-        )
+        let manager = makeIsolatedManager(defaults: defaults, storageKey: "gardenDebugState", isDebugSandbox: true)
+        manager.seedDebugGardenIfNeeded(using: defaults)
+        return manager
     }()
 #endif
 
     @Published private(set) var state: GardenState?
     @Published private(set) var issue: GardenStorageIssue?
+    @Published private(set) var lastViewedSpecies: GardenSpecies = .oak
 
     private let repository: GardenStateRepository
     private let isDebugSandbox: Bool
@@ -53,6 +70,7 @@ final class GardenManager: ObservableObject {
         )
         state = repository.state
         issue = repository.issue
+        lastViewedSpecies = repository.lastViewedSpecies
 
         if let progressManager {
             // @Published emits the new value before currentLevel itself is updated.
@@ -70,7 +88,7 @@ final class GardenManager: ObservableObject {
     var hasAvailableDevelopment: Bool { issue == nil && (state?.hasAvailableDevelopment ?? false) }
     var canGrowSelectedTree: Bool { issue == nil && (state?.canGrowSelectedTree ?? false) }
     var canPlantAnyAvailableSpecies: Bool {
-        issue == nil && GardenSpecies.allCases.contains { state?.canPlant($0) == true }
+        issue == nil && GardenSpecies.orderedGardenSpecies.contains { state?.canPlant($0) == true }
     }
 
     func canPlant(_ species: GardenSpecies) -> Bool {
@@ -102,6 +120,11 @@ final class GardenManager: ObservableObject {
     }
 
     @discardableResult
+    func selectSlot(_ species: GardenSpecies) -> GardenTransitionResult {
+        apply(repository.selectSlot(species))
+    }
+
+    @discardableResult
     func growSelectedTree() -> GardenTransitionResult {
         apply(repository.growSelectedTree())
     }
@@ -123,6 +146,27 @@ final class GardenManager: ObservableObject {
     @discardableResult
     func debugAddAction() -> GardenTransitionResult {
         guard isDebugSandbox else { return .unavailable }
+        return apply(repository.debugAddAction())
+    }
+
+    @discardableResult
+    func resetDebugTestGarden(testModeEnabled: Bool) -> GardenTransitionResult {
+        guard isDebugSandbox, testModeEnabled else { return .unavailable }
+        return apply(repository.resetDebugTestGarden())
+    }
+
+    private func seedDebugGardenIfNeeded(using defaults: UserDefaults) {
+        guard isDebugSandbox, !defaults.bool(forKey: Self.debugSeedMarker) else { return }
+        let result = repository.resetDebugTestGarden()
+        if result == .changed {
+            defaults.set(true, forKey: Self.debugSeedMarker)
+        }
+        _ = apply(result)
+    }
+
+    @discardableResult
+    func addOneGardenStepForTestMode(using settingsManager: SettingsManager) -> GardenTransitionResult {
+        guard !isDebugSandbox, settingsManager.testModeEnabled else { return .unavailable }
         return apply(repository.debugAddAction())
     }
 
@@ -159,6 +203,7 @@ final class GardenManager: ObservableObject {
     private func apply(_ result: GardenTransitionResult) -> GardenTransitionResult {
         state = repository.state
         issue = repository.issue
+        lastViewedSpecies = repository.lastViewedSpecies
         return result
     }
 

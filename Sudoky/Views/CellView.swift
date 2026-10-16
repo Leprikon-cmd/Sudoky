@@ -15,6 +15,8 @@ struct CellView: View {
     
     let highlightedValue: Int?
     let showErrors: Bool
+    var presentation: GameBoardPresentation = .standard
+    var previewNoteFontSize: CGFloat? = nil
     
     @State private var strokeName: String = ""
     @State private var showBrush: Bool = false
@@ -40,6 +42,12 @@ struct CellView: View {
     }
     
     var body: some View {
+        let isFontPreview = presentation == .fontPreview
+        let noteCellSize = cellSize / 3
+        let noteSpacing: CGFloat = isFontPreview ? 0 : 1
+        let noteFontSize = isFontPreview ? (previewNoteFontSize ?? fontManager.previewNoteFontSize(cellSize: cellSize)) : cellSize * 0.3
+        let fontMetrics: GameFontMetrics = isFontPreview ? .preview : .standard
+
         ZStack {
             // 🟫 Фон ячейки
             Rectangle()
@@ -48,17 +56,26 @@ struct CellView: View {
             // 🔢 Основная цифра или заметки
             if cell.value != 0 {
                 Text("\(cell.value)")
-                    .textStyle(size: cellSize * 0.8, customColor: textColor()) // ✅ Централизованно
+                    .gameTextStyle(
+                        size: cellSize * 0.8,
+                        characters: "\(cell.value)",
+                        color: textColor(),
+                        metrics: fontMetrics
+                    )
                     .frame(width: cellSize, height: cellSize)
             } else if !cell.notes.isEmpty {
-                VStack(spacing: 1) {
+                VStack(spacing: noteSpacing) {
                     ForEach(0..<3) { row in
-                        HStack(spacing: 1) {
+                        HStack(spacing: noteSpacing) {
                             ForEach(1..<4) { col in
                                 let noteValue = row * 3 + col
                                 Text(cell.notes.contains(noteValue) ? "\(noteValue)" : "")
-                                    .textStyle(size: cellSize * 0.3)
-                                    .frame(width: cellSize / 3, height: cellSize / 3)
+                                    .gameTextStyle(
+                                        size: noteFontSize,
+                                        characters: cell.notes.contains(noteValue) ? "\(noteValue)" : "",
+                                        metrics: fontMetrics
+                                    )
+                                    .frame(width: noteCellSize, height: noteCellSize)
                                     .foregroundColor(.gray)
                             }
                         }

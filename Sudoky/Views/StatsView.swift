@@ -6,12 +6,6 @@ struct StatsView: View {
 
     @State private var selectedIndex = 0
     @State private var showResetAlert = false
-#if DEBUG
-    @State private var showResetErrorAlert = false
-    @EnvironmentObject private var settingsManager: SettingsManager
-    @EnvironmentObject private var gardenManager: GardenManager
-    @EnvironmentObject private var playerProgressManager: PlayerProgressManager
-#endif
     @EnvironmentObject private var languageManager: LanguageManager
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var titleFontSize: CGFloat = 30
@@ -86,7 +80,7 @@ struct StatsView: View {
             }
             Button(loc("common.no"), role: .cancel) { }
         } message: {
-            Text(resetConfirmationMessage)
+            Text(loc("stats.resetConfirmMessage"))
         }
     }
 
@@ -126,40 +120,9 @@ struct StatsView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint(Text(loc("stats.resetHint")))
-#if DEBUG
-        .alert(loc("stats.resetErrorTitle"), isPresented: $showResetErrorAlert) {
-            Button(loc("common.close"), role: .cancel) { }
-        } message: {
-            Text(loc("stats.resetErrorMessage"))
-        }
-#endif
-    }
-
-    private var resetConfirmationMessage: String {
-#if DEBUG
-        settingsManager.testModeEnabled
-            ? loc("stats.resetConfirmMessage.testMode")
-            : loc("stats.resetConfirmMessage")
-#else
-        loc("stats.resetConfirmMessage")
-#endif
     }
 
     private func performReset() {
-#if DEBUG
-        if settingsManager.testModeEnabled {
-            switch gardenManager.resetWorkingGardenForTestMode(using: settingsManager) {
-            case .reset:
-                playerProgressManager.reset()
-                statsManager.resetStats()
-            case .testModeDisabled:
-                statsManager.resetStats()
-            case .failed:
-                showResetErrorAlert = true
-            }
-            return
-        }
-#endif
         statsManager.resetStats()
     }
 }

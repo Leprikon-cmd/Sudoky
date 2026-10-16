@@ -6,29 +6,45 @@
 //
 
 import AVFoundation
+import Combine
+import Foundation
 
 class MusicManager: ObservableObject {
     static let shared = MusicManager()
+
+    private let operationExecutor = MusicOperationExecutor()
     private var player: AVAudioPlayer?
     private var playerURL: URL?
     private var audioSessionIsActive = false
 
     /// Проверка: играет ли музыка сейчас
-    var isMusicPlaying: Bool {
-        player?.isPlaying ?? false
+    @Published private(set) var isMusicPlaying = false
+
+    /// Меняет состояние фоновой музыки вне главного потока.
+    func setMusicEnabled(
+        _ enabled: Bool,
+        filename: String = "Aurnis_Luthael",
+        fileExtension: String = "m4a",
+        loop: Bool = true,
+        completion: @escaping (Bool) -> Void
+    ) {
+        operationExecutor.perform({
+            return enabled
+                ? self.startMusic(filename, fileExtension: fileExtension, loop: loop)
+                : self.stopMusicOnAudioQueue()
+        }) { [weak self] succeeded in
+            guard let self else { return }
+            self.isMusicPlaying = succeeded && enabled
+            completion(succeeded)
+        }
     }
 
-    /// Запускает музыку, если она ещё не играет
-    @discardableResult
-    func playBackgroundMusic(_ filename: String, fileExtension: String = "m4a", loop: Bool = true) -> Bool {
+    private func startMusic(_ filename: String, fileExtension: String, loop: Bool) -> Bool {
         guard let url = Bundle.main.url(forResource: filename, withExtension: fileExtension) else {
             print("❌ Музыка \(filename).\(fileExtension) не найдена")
             return false
         }
-
-        if player?.isPlaying == true {
-            return true
-        }
+        if player?.isPlaying == true { return true }
 
         let audioSession = AVAudioSession.sharedInstance()
 
@@ -43,17 +59,23 @@ class MusicManager: ObservableObject {
             }
 
             guard let player else {
-                deactivate(audioSession)
+                _ = deactivate(audioSession)
                 return false
             }
 
             player.currentTime = 0
             player.numberOfLoops = loop ? -1 : 0
             player.volume = 0.5
+            guard player.prepareToPlay() else {
+                print("❌ Не удалось подготовить музыку \(filename).\(fileExtension)")
+                player.stop()
+                _ = deactivate(audioSession)
+                return false
+            }
             guard player.play() else {
                 print("❌ Не удалось запустить музыку \(filename).\(fileExtension)")
                 player.stop()
-                deactivate(audioSession)
+                _ = deactivate(audioSession)
                 return false
             }
 
@@ -62,26 +84,29 @@ class MusicManager: ObservableObject {
             print("❌ Ошибка воспроизведения: \(error.localizedDescription)")
             player?.stop()
             if audioSessionIsActive {
-                deactivate(audioSession)
+                _ = deactivate(audioSession)
             }
             return false
         }
     }
 
-    /// Останавливает музыку
-    func stopMusic() {
+    private func stopMusicOnAudioQueue() -> Bool {
         player?.stop()
         if audioSessionIsActive {
-            deactivate(AVAudioSession.sharedInstance())
+            _ = deactivate(AVAudioSession.sharedInstance())
         }
+        return player?.isPlaying != true
     }
 
-    private func deactivate(_ audioSession: AVAudioSession) {
+    @discardableResult
+    private func deactivate(_ audioSession: AVAudioSession) -> Bool {
         do {
             try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
             audioSessionIsActive = false
+            return true
         } catch {
             print("❌ Ошибка отключения аудиосессии: \(error.localizedDescription)")
+            return false
         }
     }
 }

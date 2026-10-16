@@ -5,19 +5,30 @@ struct GardenView: View {
     @EnvironmentObject private var languageManager: LanguageManager
     @EnvironmentObject private var gardenManager: GardenManager
     @EnvironmentObject private var settingsManager: SettingsManager
+    @EnvironmentObject private var fontManager: FontManager
 
-    @State private var showingDebugPanel = false
-    @State private var showingPlantingSheet = false
+    @State private var showingGardenHelp = false
     @ScaledMetric(relativeTo: .title2) private var titleFontSize: CGFloat = 30
     @ScaledMetric(relativeTo: .body) private var subtitleFontSize: CGFloat = 17
     @ScaledMetric(relativeTo: .body) private var actionFontSize: CGFloat = 14
+    @ScaledMetric(relativeTo: .headline) private var navigationTitleFontSize: CGFloat = 18
 
     var body: some View {
         let _ = languageManager.language
 
         GeometryReader { geometry in
             let compact = geometry.size.height < 650
-            let tree = gardenManager.selectedTree
+            let viewedSpecies = gardenManager.lastViewedSpecies
+            let tree = gardenManager.state?.trees.first(where: { $0.species == viewedSpecies })
+            let treeImageSide = min(
+                min(340, max(0, geometry.size.width - 48)),
+                geometry.size.height * (compact ? 0.42 : 0.50)
+            )
+            let treeImageOffsetY = tree.map {
+                BonsaiPotMetrics.gardenOffsetY(for: $0, frameSide: treeImageSide)
+            } ?? 0
+            let canGrowViewedTree = gardenManager.state?.selectedSpecies == viewedSpecies
+                && gardenManager.canGrowSelectedTree
 
             ZStack {
                 BackgroundView()
@@ -46,53 +57,41 @@ struct GardenView: View {
                         maxWidth: min(340, geometry.size.width - 48),
                         maxHeight: geometry.size.height * (compact ? 0.42 : 0.50)
                     )
+                    .offset(y: treeImageOffsetY)
                     .overlay {
-                        if gardenManager.hasAvailableDevelopment {
+                        if gardenManager.canPlant(viewedSpecies) || canGrowViewedTree {
                             GardenAvailabilityGlow()
                                 .padding(30)
                                 .allowsHitTesting(false)
                         }
                     }
-                    .accessibilityLabel(Text(loc(tree.map { speciesNameKey($0.species) } ?? "garden.empty.title")))
+                    .accessibilityLabel(Text(loc(speciesNameKey(viewedSpecies))))
                     .animation(.easeInOut(duration: 0.25), value: tree?.imageAssetName)
+                    .gesture(
+                        DragGesture(minimumDistance: 24)
+                            .onEnded { value in selectAdjacentSlot(for: value.translation) }
+                    )
 
-                    Text(loc(tree.map { speciesNameKey($0.species) } ?? "garden.empty.title"))
+                    Text(loc(speciesNameKey(viewedSpecies)))
                         .textStyle(size: titleFontSize)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(loc(gardenManager.issue != nil
                              ? "garden.storage.error"
-                             : tree.map { speciesSubtitleKey($0.species) } ?? "garden.empty.message"))
+                             : tree.map { speciesSubtitleKey($0.species) }
+                                ?? emptySlotSubtitleKey(for: viewedSpecies)))
                         .textStyle(size: subtitleFontSize)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    if hasBothPlantableSpecies {
-                        HStack(spacing: 8) {
-                            ForEach([GardenSpecies.oak, .beech], id: \.self) { species in
-                                let selected = species == tree?.species
-                                Button {
-                                    gardenManager.selectTree(species)
-                                } label: {
-                                    Text(loc(speciesNameKey(species)))
-                                        .textStyle(size: 14)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background {
-                                            Capsule().fill(Color("ButtonPrimary").opacity(selected ? 0.16 : 0.05))
-                                        }
-                                        .overlay {
-                                            Capsule().stroke(Color("Line").opacity(selected ? 1 : 0.6), lineWidth: 1)
-                                        }
-                                        .frame(minWidth: 44, minHeight: 44)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityAddTraits(selected ? .isSelected : [])
-                            }
+                    HStack(spacing: 4) {
+                        ForEach(GardenSpecies.orderedGardenSpecies, id: \.self) { species in
+                            speciesSlotButton(species)
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .animation(.easeInOut(duration: 0.22), value: gardenManager.lastViewedSpecies)
 
                     if gardenManager.hasAvailableDevelopment {
                         GardenStatusLabel(key: "garden.availability", symbol: "sparkle")
@@ -110,9 +109,9 @@ struct GardenView: View {
                             iconName: "garden_icon_sprout_v2",
                             visibleBounds: CGRect(x: 129, y: 151, width: 998, height: 984),
                             fontSize: actionFontSize,
-                            enabled: gardenManager.canPlantAnyAvailableSpecies
+                            enabled: gardenManager.canPlant(viewedSpecies)
                         ) {
-                            showingPlantingSheet = true
+                            gardenManager.plant(viewedSpecies)
                         }
 
                         GardenActionButton(
@@ -120,61 +119,20 @@ struct GardenView: View {
                             iconName: "garden_icon_branch_v1",
                             visibleBounds: CGRect(x: 126, y: 151, width: 1002, height: 975),
                             fontSize: actionFontSize,
-                            enabled: gardenManager.issue == nil && gardenManager.canGrowSelectedTree
+                            enabled: gardenManager.issue == nil && canGrowViewedTree
                         ) {
                             gardenManager.growSelectedTree()
                         }
 
-                        GardenActionButton(
-                            title: loc("garden.action.stone"),
-                            iconName: "garden_icon_stone_v1",
-                            visibleBounds: CGRect(x: 110, y: 104, width: 1048, height: 1046),
-                            fontSize: actionFontSize,
-                            enabled: false,
-                            action: {}
-                        )
                     }
                     .padding(.bottom, 12)
 
-#if DEBUG
-                    if settingsManager.testModeEnabled {
-                        Button {
-                            gardenManager.debugGrowAllPlantedTreesToMaximum(using: settingsManager)
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "leaf.fill")
-                                    .accessibilityHidden(true)
-                                Text(loc("garden.debug.growAllToMaximum"))
-                                    .textStyle(size: 15)
-                                    .multilineTextAlignment(.center)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .padding(.horizontal, 12)
-                            .contentShape(RoundedRectangle(cornerRadius: 14))
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!gardenManager.canDebugGrowAllPlantedTreesToMaximum)
-                        .opacity(gardenManager.canDebugGrowAllPlantedTreesToMaximum ? 1 : 0.55)
-                        .background {
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color("ButtonPrimary").opacity(0.055))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color("Line").opacity(0.9), lineWidth: 1)
-                                }
-                                .shadow(color: Color("ButtonPrimary").opacity(0.08), radius: 3, y: 1)
-                        }
-                        .padding(.bottom, 8)
-                    }
-#endif
                 }
                 .padding(.horizontal, 16)
                 .frame(maxWidth: 560, maxHeight: .infinity)
                 .frame(maxWidth: .infinity)
             }
         }
-        .navigationTitle(loc("garden.title"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -182,40 +140,138 @@ struct GardenView: View {
                 path.removeLast()
             }
 #if DEBUG
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showingDebugPanel = true
-                } label: {
-                    Image(systemName: "ladybug")
+            if settingsManager.testModeEnabled {
+                GardenDebugToolbarItem {
+                    guard settingsManager.testModeEnabled else { return }
+                    _ = gardenManager.resetDebugTestGarden(testModeEnabled: settingsManager.testModeEnabled)
                 }
-                .accessibilityLabel(loc("garden.debug.title"))
             }
 #endif
-        }
-        .sheet(isPresented: $showingPlantingSheet) {
-            GardenPlantingSheet(state: gardenManager.state) { species in
-                gardenManager.plant(species)
+            ToolbarItem(placement: .principal) {
+                Text(loc("garden.title"))
+                    .textStyle(size: navigationTitleFontSize)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .accessibilityAddTraits(.isHeader)
             }
-            .environmentObject(languageManager)
+            RoundBrushIconToolbarItem(
+                assetName: "nav_help_brush_v2",
+                accessibilityLabelKey: GardenHelpContent.accessibilityLabelKey,
+                placement: .navigationBarTrailing
+            ) {
+                showingGardenHelp = true
+            }
         }
-#if DEBUG
-        .sheet(isPresented: $showingDebugPanel) {
-            GardenDebugPanel()
+        .sheet(isPresented: $showingGardenHelp) {
+            GardenHelpSheet()
+                .environmentObject(languageManager)
+                .environmentObject(fontManager)
+                .environmentObject(settingsManager)
         }
-#endif
     }
 
-    private var hasBothPlantableSpecies: Bool {
-        let species = Set(gardenManager.state?.trees.map(\.species) ?? [])
-        return species.contains(.oak) && species.contains(.beech)
+    private func speciesSlotButton(_ species: GardenSpecies) -> some View {
+        let tree = gardenManager.state?.trees.first(where: { $0.species == species })
+        let thumbnail = tree?.imageAssetName ?? GardenTree(species: species, stage: 1).imageAssetName ?? "garden_icon_sprout_v2"
+        let isSelected = gardenManager.lastViewedSpecies == species
+        let isPlanted = tree != nil
+        let canPlant = gardenManager.canPlant(species)
+        let statusKey = speciesStatusKey(species)
+        let statusSymbol = gardenManager.issue != nil
+            ? "exclamationmark.circle.fill"
+            : (isPlanted ? "checkmark.circle.fill" : (canPlant ? "leaf.fill" : "lock.fill"))
+
+        return Button {
+            withAnimation(.easeInOut(duration: 0.22)) {
+                _ = gardenManager.selectSlot(species)
+            }
+        } label: {
+            VStack(spacing: 2) {
+                ZStack(alignment: .topTrailing) {
+                    Image(thumbnail)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 34)
+
+                    Image(systemName: statusSymbol)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Color("ButtonPrimary"))
+                        .background(Circle().fill(Color.white.opacity(0.88)).frame(width: 13, height: 13))
+                        .offset(x: 3, y: -2)
+                        .accessibilityHidden(true)
+                }
+                Text(loc(shortSpeciesNameKey(species)))
+                    .textStyle(size: 11)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .frame(maxWidth: .infinity)
+            }
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 2)
+            .background {
+                RoundedRectangle(cornerRadius: 11)
+                    .fill(Color("ButtonPrimary").opacity(isSelected ? 0.15 : 0.035))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 11)
+                            .stroke(Color("Line").opacity(isSelected ? 1 : 0.55), lineWidth: 1)
+                    }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 11))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("\(loc(speciesNameKey(species))) — \(loc(statusKey))"))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private func speciesNameKey(_ species: GardenSpecies) -> String {
         species == .oak ? "garden.oak.name" : "garden.species.\(species.rawValue)"
     }
 
+    private func shortSpeciesNameKey(_ species: GardenSpecies) -> String {
+        "garden.species.short.\(species.rawValue)"
+    }
+
+    private func speciesStatusKey(_ species: GardenSpecies) -> String {
+        if gardenManager.issue != nil { return "garden.storage.error" }
+        if gardenManager.state?.trees.contains(where: { $0.species == species }) == true {
+            return "garden.species.planted"
+        }
+        if gardenManager.canPlant(species) {
+            return gardenManager.state?.hasUsedFirstFreePlanting == true
+                ? "garden.costsAction"
+                : "garden.readyToPlant"
+        }
+        return "garden.needsAction"
+    }
+
+    private func emptySlotSubtitleKey(for species: GardenSpecies) -> String {
+        guard gardenManager.canPlant(species) else { return "garden.needsAction" }
+        return gardenManager.state?.hasUsedFirstFreePlanting == true
+            ? "garden.costsAction"
+            : "garden.readyToPlant"
+    }
+
+    private func selectAdjacentSlot(for translation: CGSize) {
+        guard abs(translation.width) >= 36,
+              abs(translation.width) > abs(translation.height) * 1.15,
+              let state = gardenManager.state,
+              let next = state.adjacentGardenSlot(
+                from: gardenManager.lastViewedSpecies,
+                direction: translation.width < 0 ? 1 : -1
+              ) else { return }
+        withAnimation(.easeInOut(duration: 0.22)) {
+            _ = gardenManager.selectSlot(next)
+        }
+    }
+
     private func speciesSubtitleKey(_ species: GardenSpecies) -> String {
-        species == .oak ? "garden.oak.subtitle" : "garden.beech.subtitle"
+        switch species {
+        case .oak: return "garden.oak.subtitle"
+        case .beech: return "garden.beech.subtitle"
+        case .maple, .juniper, .apple: return "garden.species.subtitle.\(species.rawValue)"
+        case .fir: return "garden.species.unavailable"
+        }
     }
 }
 
@@ -238,69 +294,6 @@ private struct GardenStatusLabel: View {
         .foregroundStyle(Color("ButtonPrimary"))
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .combine)
-    }
-}
-
-private struct GardenPlantingSheet: View {
-    let state: GardenState?
-    let onSelect: (GardenSpecies) -> Void
-
-    @EnvironmentObject private var languageManager: LanguageManager
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        let _ = languageManager.language
-
-        NavigationStack {
-            List {
-                ForEach(GardenSpecies.allCases, id: \.self) { species in
-                    let planted = state?.trees.contains(where: { $0.species == species }) == true
-                    let available = state?.canPlant(species) == true
-                    let subtitleKey: String = {
-                        guard species.isCurrentlyPlantable else { return "garden.species.unavailable" }
-                        if planted { return "garden.species.planted" }
-                        if available {
-                            return state?.hasUsedFirstFreePlanting == true
-                                ? "garden.costsAction"
-                                : "garden.freePlanting"
-                        }
-                        return "garden.needsAction"
-                    }()
-                    Button {
-                        guard available else { return }
-                        onSelect(species)
-                        dismiss()
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: available ? "leaf" : "lock")
-                                .foregroundStyle(Color("ButtonPrimary"))
-                                .frame(width: 28)
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(loc(species == .oak ? "garden.oak.name" : "garden.species.\(species.rawValue)"))
-                                    .textStyle(size: 17)
-                                Text(loc(subtitleKey))
-                                    .textStyle(size: 13)
-                                    .foregroundStyle(Color("TextColor").opacity(0.75))
-                            }
-                            Spacer(minLength: 0)
-                        }
-                        .padding(.vertical, 5)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!available)
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background(BackgroundView())
-            .navigationTitle(loc("garden.planting.title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(loc("common.close")) { dismiss() }
-                }
-            }
-        }
     }
 }
 
@@ -354,3 +347,39 @@ struct GardenAvailabilityGlow: View {
             .blendMode(.screen)
     }
 }
+
+#if DEBUG
+private struct GardenDebugToolbarItem: ToolbarContent {
+    let action: () -> Void
+
+    @EnvironmentObject private var languageManager: LanguageManager
+
+    @ToolbarContentBuilder
+    var body: some ToolbarContent {
+        let _ = languageManager.language
+
+        if #available(iOS 26.0, *) {
+            ToolbarItem(placement: .navigationBarLeading) {
+                debugButton
+            }
+            .sharedBackgroundVisibility(.hidden)
+        } else {
+            ToolbarItem(placement: .navigationBarLeading) {
+                debugButton
+            }
+        }
+    }
+
+    private var debugButton: some View {
+        Button(action: action) {
+            Image(systemName: "ladybug")
+                .font(.system(size: 17))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.leading, 10)
+        .accessibilityLabel(Text(loc("garden.testMode.reset")))
+    }
+}
+#endif

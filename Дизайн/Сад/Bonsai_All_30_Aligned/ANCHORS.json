@@ -1,0 +1,499 @@
+{
+  "asset_spec": "Bonsai standardized assets v1",
+  "canvas_px": {
+    "width": 1254,
+    "height": 1254
+  },
+  "attachment_point_px": {
+    "x": 627,
+    "y": 1204
+  },
+  "attachment_point_normalized": {
+    "x": 0.5,
+    "y": 0.96012759
+  },
+  "attachment_description": "bottom-center of bonsai pot; same canvas coordinates in all 30 PNGs",
+  "image_format": "RGBA PNG (transparent background)",
+  "assets": [
+    {
+      "filename": "Juniper/Juniper_Stage_01.png",
+      "species": "Juniper",
+      "stage": 1,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_02.png",
+      "species": "Juniper",
+      "stage": 2,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_03.png",
+      "species": "Juniper",
+      "stage": 3,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_04.png",
+      "species": "Juniper",
+      "stage": 4,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_05.png",
+      "species": "Juniper",
+      "stage": 5,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_06.png",
+      "species": "Juniper",
+      "stage": 6,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_07.png",
+      "species": "Juniper",
+      "stage": 7,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_08.png",
+      "species": "Juniper",
+      "stage": 8,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_09.png",
+      "species": "Juniper",
+      "stage": 9,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Juniper/Juniper_Stage_10.png",
+      "species": "Juniper",
+      "stage": 10,
+      "source_archive": "Juniper_Stages_01-10_Oval.zip",
+      "source_horizontal_pot_center": 623.5,
+      "source_base_y": 1204,
+      "translated_px": {
+        "dx": 4,
+        "dy": 0
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_01.png",
+      "species": "Maple",
+      "stage": 1,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 628.5,
+      "source_base_y": 1150,
+      "translated_px": {
+        "dx": -2,
+        "dy": 54
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_02.png",
+      "species": "Maple",
+      "stage": 2,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 625.0,
+      "source_base_y": 1149,
+      "translated_px": {
+        "dx": 2,
+        "dy": 55
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_03.png",
+      "species": "Maple",
+      "stage": 3,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 627.0,
+      "source_base_y": 1149,
+      "translated_px": {
+        "dx": 0,
+        "dy": 55
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_04.png",
+      "species": "Maple",
+      "stage": 4,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 628.0,
+      "source_base_y": 1149,
+      "translated_px": {
+        "dx": -1,
+        "dy": 55
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_05.png",
+      "species": "Maple",
+      "stage": 5,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 627.5,
+      "source_base_y": 1146,
+      "translated_px": {
+        "dx": 0,
+        "dy": 58
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_06.png",
+      "species": "Maple",
+      "stage": 6,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 628.5,
+      "source_base_y": 1143,
+      "translated_px": {
+        "dx": -2,
+        "dy": 61
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_07.png",
+      "species": "Maple",
+      "stage": 7,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 628.0,
+      "source_base_y": 1143,
+      "translated_px": {
+        "dx": -1,
+        "dy": 61
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_08.png",
+      "species": "Maple",
+      "stage": 8,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 627.0,
+      "source_base_y": 1144,
+      "translated_px": {
+        "dx": 0,
+        "dy": 60
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_09.png",
+      "species": "Maple",
+      "stage": 9,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 626.5,
+      "source_base_y": 1141,
+      "translated_px": {
+        "dx": 0,
+        "dy": 63
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Maple/Maple_Stage_10.png",
+      "species": "Maple",
+      "stage": 10,
+      "source_archive": "Maple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 622.5,
+      "source_base_y": 1147,
+      "translated_px": {
+        "dx": 4,
+        "dy": 57
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_01.png",
+      "species": "Apple",
+      "stage": 1,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 626.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": 1,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_02.png",
+      "species": "Apple",
+      "stage": 2,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 626.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": 1,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_03.png",
+      "species": "Apple",
+      "stage": 3,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 608.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": 19,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_04.png",
+      "species": "Apple",
+      "stage": 4,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 633.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": -6,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_05.png",
+      "species": "Apple",
+      "stage": 5,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 630.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": -3,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_06.png",
+      "species": "Apple",
+      "stage": 6,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 639.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": -12,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_07.png",
+      "species": "Apple",
+      "stage": 7,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 636.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": -9,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_08.png",
+      "species": "Apple",
+      "stage": 8,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 620.5,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": 6,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_09.png",
+      "species": "Apple",
+      "stage": 9,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 628.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": -1,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    },
+    {
+      "filename": "Apple/Apple_Stage_10.png",
+      "species": "Apple",
+      "stage": 10,
+      "source_archive": "Apple_Stages_01-10.zip",
+      "source_horizontal_pot_center": 623.0,
+      "source_base_y": 1179,
+      "translated_px": {
+        "dx": 4,
+        "dy": 25
+      },
+      "anchor_px": {
+        "x": 627,
+        "y": 1204
+      }
+    }
+  ]
+}

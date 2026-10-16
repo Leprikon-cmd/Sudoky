@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" useAutolayout="YES" launchScreen="YES" colorMatched="YES" initialViewController="launch-controller">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="launch-scene">
+            <objects>
+                <viewController id="launch-controller" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="launch-root">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" contentMode="scaleAspectFill" image="Launch_Garden" translatesAutoresizingMaskIntoConstraints="NO" id="launch-image">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="launch-safe-area"/>
+                        <constraints>
+                            <constraint firstItem="launch-image" firstAttribute="top" secondItem="launch-root" secondAttribute="top" id="image-top"/>
+                            <constraint firstItem="launch-image" firstAttribute="leading" secondItem="launch-root" secondAttribute="leading" id="image-leading"/>
+                            <constraint firstItem="launch-image" firstAttribute="trailing" secondItem="launch-root" secondAttribute="trailing" id="image-trailing"/>
+                            <constraint firstItem="launch-image" firstAttribute="bottom" secondItem="launch-root" secondAttribute="bottom" id="image-bottom"/>
+                        </constraints>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="first-responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="52"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="Launch_Garden" width="1024" height="1536"/>
+    </resources>
+</document>

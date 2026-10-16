@@ -36,10 +36,6 @@ class SettingsManager: ObservableObject {
 
     init() {
         registerDefaults()
-        let language = UserDefaults.standard.string(forKey: "language")
-            ?? Locale.current.language.languageCode?.identifier
-            ?? "ru"
-        fontManager.updateAvailableFonts(for: language)
     }
 
     private func registerDefaults() {

@@ -10,6 +10,11 @@ import SwiftUI
 import UIKit
 import CoreText
 
+enum GameFontMetrics: Equatable {
+    case standard
+    case preview
+}
+
 // ✅ Быстрый доступ к стилю текста с автоматическим шрифтом и цветом
 extension View {
     func textStyle(size: CGFloat, customColor: Color? = nil) -> some View {
@@ -18,6 +23,19 @@ extension View {
 
     func textStyle(size: CGFloat, color: Color) -> some View {
         modifier(FixedTextStyle(size: size, color: color))
+    }
+
+    func bookTextStyle(size: CGFloat, weight: Font.Weight = .regular, color: Color? = nil) -> some View {
+        modifier(BookTextStyle(size: size, weight: weight, color: color))
+    }
+
+    func gameTextStyle(
+        size: CGFloat,
+        characters: String,
+        color: Color? = nil,
+        metrics: GameFontMetrics = .standard
+    ) -> some View {
+        modifier(GameTextStyle(size: size, characters: characters, color: color, metrics: metrics))
     }
 }
 
@@ -30,9 +48,8 @@ private struct AutoTextStyle: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .font(fontManager.font(size: size))
+            .font(fontManager.interfaceFont(size: size))
             .foregroundColor(customColor ?? settings.selectedTextColor)
-            .offset(fontManager.offset(for: fontManager.selectedFontName))
     }
 }
 
@@ -44,8 +61,36 @@ private struct FixedTextStyle: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .font(fontManager.font(size: size))
+            .font(fontManager.interfaceFont(size: size))
             .foregroundColor(color)
+    }
+}
+
+private struct BookTextStyle: ViewModifier {
+    let size: CGFloat
+    let weight: Font.Weight
+    let color: Color?
+    @EnvironmentObject var settings: SettingsManager
+    @EnvironmentObject var fontManager: FontManager
+
+    func body(content: Content) -> some View {
+        content.font(fontManager.bookFont(size: size, weight: weight))
+            .foregroundColor(color ?? settings.selectedTextColor)
+    }
+}
+
+private struct GameTextStyle: ViewModifier {
+    let size: CGFloat
+    let characters: String
+    let color: Color?
+    let metrics: GameFontMetrics
+    @EnvironmentObject var settings: SettingsManager
+    @EnvironmentObject var fontManager: FontManager
+
+    func body(content: Content) -> some View {
+        content.font(fontManager.gameFont(size: size, characters: characters))
+            .foregroundColor(color ?? settings.selectedTextColor)
+            .offset(fontManager.gameTextOffset(size: size, characters: characters, metrics: metrics))
     }
 }
 
@@ -53,8 +98,10 @@ private struct FixedTextStyle: ViewModifier {
 class FontManager: ObservableObject {
     static let shared = FontManager()
 
-    @AppStorage("selectedFont") private var selectedFont: String = "System"
-    @Published var availableFonts: [String] = []
+    @Published var selectedFontName: String {
+        didSet { UserDefaults.standard.set(selectedFontName, forKey: "selectedFont") }
+    }
+    let availableFonts: [String]
 
     /// Полный список всех шрифтов проекта
     private let allFonts: [String] = [
@@ -72,37 +119,26 @@ class FontManager: ObservableObject {
     ]
 
     init() {
-        updateAvailableFonts(for: Locale.current.language.languageCode?.identifier ?? "en")
+        selectedFontName = UserDefaults.standard.string(forKey: "selectedFont") ?? "System"
+        availableFonts = allFonts
+        configureNavigationBarTypography()
     }
 
-    // MARK: - Обновление списка шрифтов под язык
-    func updateAvailableFonts(for language: String) {
-        if language == "ru" {
-            availableFonts = allFonts.filter { fontSupportsCyrillic($0) }
-        } else {
-            availableFonts = allFonts
+    private func configureNavigationBarTypography() {
+        let appearance = UINavigationBar.appearance()
+        if let inlineFont = UIFont(name: "OldStandardTT-Regular", size: 17) {
+            var attributes = appearance.titleTextAttributes ?? [:]
+            attributes[.font] = inlineFont
+            appearance.titleTextAttributes = attributes
         }
-
-        // 🔒 Проверка: если выбранный шрифт больше не доступен — сбрасываем
-        if !availableFonts.contains(selectedFontName) {
-            selectedFontName = availableFonts.first ?? "System"
+        if let largeFont = UIFont(name: "OldStandardTT-Regular", size: 34) {
+            var attributes = appearance.largeTitleTextAttributes ?? [:]
+            attributes[.font] = largeFont
+            appearance.largeTitleTextAttributes = attributes
         }
     }
 
     // MARK: - Проверка: умеет ли шрифт отображать кириллицу?
-    private func fontSupportsCyrillic(_ fontName: String) -> Bool {
-        let testString = "ЖЯБ" // + Можно расширить при желании
-        guard let uiFont = uiFontFor(fontName, size: 14) else { return false }
-
-        let ctFont = uiFont as CTFont
-        let characters = Array(testString.utf16)
-        var glyphs = Array<CGGlyph>(repeating: 0, count: characters.count)
-
-        let success = CTFontGetGlyphsForCharacters(ctFont, characters, &glyphs, characters.count)
-
-        return success && !glyphs.contains(0)
-    }
-
     // MARK: - Получение UIFont по имени
     private func uiFontFor(_ font: String, size: CGFloat) -> UIFont? {
         switch font {
@@ -120,27 +156,103 @@ class FontManager: ObservableObject {
         }
     }
 
-    // MARK: - Текущий выбранный шрифт
-    var selectedFontName: String {
-        get { selectedFont }
-        set { selectedFont = newValue }
+    private func hasGlyphs(_ text: String, in font: UIFont) -> Bool {
+        let characters = Array(text.utf16)
+        guard !characters.isEmpty else { return true }
+        var glyphs = Array<CGGlyph>(repeating: 0, count: characters.count)
+        return CTFontGetGlyphsForCharacters(font as CTFont, characters, &glyphs, characters.count)
+            && !glyphs.contains(0)
     }
 
-    // MARK: - Возврат шрифта для SwiftUI
-    func font(size: CGFloat) -> Font {
-        switch selectedFont {
-        case "Pacifico": return Font.custom("Pacifico-Regular", size: size)
-        case "CormorantGaramond": return Font.custom("CormorantGaramond-Regular", size: size)
-        case "Medieval": return Font.custom("MedievalSharp", size: size)
-        case "OldStandard": return Font.custom("OldStandardTT-Regular", size: size)
-        case "RuslanDisplay": return Font.custom("RuslanDisplay", size: size)
-        case "ShareTech": return Font.custom("ShareTechMono-Regular", size: size)
-        case "UncialAntiqua": return Font.custom("UncialAntiqua-Regular", size: size)
-        case "Skranji": return Font.custom("Skranji", size: size)
-        case "GreatVibes": return Font.custom("GreatVibes-Regular", size: size)
-        case "Deutsch Gothic": return Font.custom("DeutschGothic", size: size)
-        default: return Font.system(size: size)
+    private func fontName(for choice: String) -> String? {
+        switch choice {
+        case "Pacifico": return "Pacifico-Regular"
+        case "CormorantGaramond": return "CormorantGaramond-Regular"
+        case "Medieval": return "MedievalSharp"
+        case "OldStandard": return "OldStandardTT-Regular"
+        case "RuslanDisplay": return "RuslanDisplay"
+        case "ShareTech": return "ShareTechMono-Regular"
+        case "UncialAntiqua": return "UncialAntiqua-Regular"
+        case "Skranji": return "Skranji"
+        case "GreatVibes": return "GreatVibes-Regular"
+        case "Deutsch Gothic": return "DeutschGothic"
+        default: return nil
         }
+    }
+
+    func interfaceFont(size: CGFloat) -> Font {
+        if UIFont(name: "OldStandardTT-Regular", size: size) != nil {
+            return .custom("OldStandardTT-Regular", size: size)
+        }
+        return .system(size: size)
+    }
+
+    func interfaceMeasurementFont(size: CGFloat) -> UIFont {
+        UIFont(name: "OldStandardTT-Regular", size: size) ?? .systemFont(ofSize: size)
+    }
+
+    func bookFont(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        if UIFont(name: "CormorantGaramond-Regular", size: size) != nil {
+            let font = Font.custom("CormorantGaramond-Regular", size: size)
+            return weight == .regular ? font : font.weight(weight)
+        }
+        return weight == .regular ? .system(size: size) : .system(size: size, weight: weight, design: .serif)
+    }
+
+    func bookMeasurementFont(size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
+        let regular = UIFont(name: "CormorantGaramond-Regular", size: size) ?? .systemFont(ofSize: size)
+        guard weight != .regular else { return regular }
+        let traits: [UIFontDescriptor.TraitKey: Any] = [.weight: weight.rawValue]
+        let descriptor = regular.fontDescriptor.addingAttributes([.traits: traits])
+        return UIFont(descriptor: descriptor, size: size)
+    }
+
+    func gameFont(size: CGFloat, characters: String) -> Font {
+        guard let name = fontName(for: selectedFontName), let font = UIFont(name: name, size: size), hasGlyphs(characters, in: font) else {
+            return .system(size: size)
+        }
+        return .custom(name, size: size)
+    }
+
+    func gameMeasurementFont(size: CGFloat, characters: String) -> UIFont {
+        guard let name = fontName(for: selectedFontName), let font = UIFont(name: name, size: size), hasGlyphs(characters, in: font) else {
+            return .systemFont(ofSize: size)
+        }
+        return font
+    }
+
+    func previewNoteFontSize(cellSize: CGFloat) -> CGFloat {
+        let noteCellSize = cellSize / 3
+        let font = gameMeasurementFont(size: 100, characters: "123456789") as CTFont
+        let characters = Array("123456789".utf16)
+        var glyphs = Array<CGGlyph>(repeating: 0, count: characters.count)
+        guard CTFontGetGlyphsForCharacters(font, characters, &glyphs, characters.count) else {
+            return noteCellSize * 0.75
+        }
+        var bounds = Array<CGRect>(repeating: .zero, count: glyphs.count)
+        _ = CTFontGetBoundingRectsForGlyphs(font, .horizontal, &glyphs, &bounds, glyphs.count)
+        let largestGlyph = bounds.map(\.height).max() ?? 0
+        guard largestGlyph > 0 else { return noteCellSize * 0.75 }
+
+        let sizeForTargetGlyphHeight = 100 * (noteCellSize * 0.74) / largestGlyph
+        return min(sizeForTargetGlyphHeight, noteCellSize * 1.15)
+    }
+
+    func gameTextOffset(size: CGFloat, characters: String, metrics: GameFontMetrics) -> CGSize {
+        guard metrics == .preview else { return offset(for: selectedFontName) }
+        let units = Array(characters.utf16)
+        guard !units.isEmpty else { return .zero }
+
+        let font = gameMeasurementFont(size: size, characters: characters) as CTFont
+        var glyphs = Array<CGGlyph>(repeating: 0, count: units.count)
+        guard CTFontGetGlyphsForCharacters(font, units, &glyphs, units.count) else { return .zero }
+        var bounds = Array<CGRect>(repeating: .zero, count: glyphs.count)
+        _ = CTFontGetBoundingRectsForGlyphs(font, .horizontal, &glyphs, &bounds, glyphs.count)
+
+        let baselineToLineCenter = (CTFontGetAscent(font) - CTFontGetDescent(font)) / 2
+        let correction = (bounds.first?.midY ?? 0) - baselineToLineCenter
+        let limit = min(1.5, size * 0.16)
+        return CGSize(width: 0, height: min(limit, max(-limit, correction)))
     }
 
     // MARK: - Смещение текста для выравнивания

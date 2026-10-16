@@ -8,9 +8,11 @@ struct StartView: View {
     @AppStorage("playerName") private var playerName: String = ""
     @State private var hasSave: Bool = false
     @State private var showAboutSheet = false
+    @State private var musicRequestInFlight = false
     @EnvironmentObject var fontManager: FontManager
     @EnvironmentObject var languageManager: LanguageManager
     @EnvironmentObject var settings: SettingsManager
+    @Environment(\.startupTransitionComplete) private var startupTransitionComplete
     @EnvironmentObject private var gardenManager: GardenManager
     @ScaledMetric(relativeTo: .body) private var actionFontSize: CGFloat = 20
 
@@ -19,69 +21,79 @@ struct StartView: View {
 
         GeometryReader { geometry in
             let safeArea = geometry.safeAreaInsets
-            let viewportSize = CGSize(
-                width: geometry.size.width + safeArea.leading + safeArea.trailing,
-                height: geometry.size.height + safeArea.top + safeArea.bottom
-            )
-            let actionBlockBottom = viewportSize.height - safeArea.bottom - 10
-            let treeContactY = viewportSize.height * 0.59
-            let actionRoomBelowTree = max(
-                0,
-                actionBlockBottom - treeContactY - 6
-            )
-            let actionButtonHeight = min(
-                56,
-                max(44, (actionRoomBelowTree - 3 * 7) / 4)
-            )
-            let actionButtonSpacing = min(
-                7,
-                max(0, (actionRoomBelowTree - actionButtonHeight * 4) / 3)
-            )
-            let actionBlockTop = actionBlockBottom
-                - actionButtonHeight * 4
-                - actionButtonSpacing * 3
-            ZStack(alignment: .topLeading) {
-                Color(red: 0.92, green: 0.82, blue: 0.66)
-                    .frame(width: viewportSize.width, height: viewportSize.height)
+            if StartupGeometry.hasUsableHomeLayout(
+                size: geometry.size,
+                top: safeArea.top,
+                leading: safeArea.leading,
+                bottom: safeArea.bottom,
+                trailing: safeArea.trailing
+            ) {
+                let viewportSize = CGSize(
+                    width: geometry.size.width + safeArea.leading + safeArea.trailing,
+                    height: geometry.size.height + safeArea.top + safeArea.bottom
+                )
+                let actionBlockBottom = viewportSize.height - safeArea.bottom - 10
+                let treeContactY = viewportSize.height * 0.59
+                let actionRoomBelowTree = max(
+                    0,
+                    actionBlockBottom - treeContactY - 6
+                )
+                let actionButtonHeight = min(
+                    56,
+                    max(44, (actionRoomBelowTree - 3 * 7) / 4)
+                )
+                let actionButtonSpacing = min(
+                    7,
+                    max(0, (actionRoomBelowTree - actionButtonHeight * 4) / 3)
+                )
+                let actionBlockTop = actionBlockBottom
+                    - actionButtonHeight * 4
+                    - actionButtonSpacing * 3
+                ZStack(alignment: .topLeading) {
+                    Color(red: 0.92, green: 0.82, blue: 0.66)
+                        .frame(width: viewportSize.width, height: viewportSize.height)
 
-                Image("home_background_wood_terrace_v2")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(
-                        width: viewportSize.height * 852 / 1847,
-                        height: viewportSize.height
+                    Image("home_background_wood_terrace_v2")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(
+                            width: viewportSize.height * 852 / 1847,
+                            height: viewportSize.height
+                        )
+                        .position(x: viewportSize.width / 2, y: viewportSize.height / 2)
+                        .accessibilityHidden(true)
+
+                    gardenButton(
+                        viewportSize: viewportSize,
+                        contactY: treeContactY,
+                        actionBlockTop: actionBlockTop
                     )
-                    .position(x: viewportSize.width / 2, y: viewportSize.height / 2)
-                    .accessibilityHidden(true)
 
-                gardenButton(
-                    viewportSize: viewportSize,
-                    contactY: treeContactY,
-                    actionBlockTop: actionBlockTop
-                )
+                    topControls(
+                        viewportWidth: viewportSize.width,
+                        safeAreaTop: safeArea.top
+                    )
 
-                topControls(
-                    viewportWidth: viewportSize.width,
-                    safeAreaTop: safeArea.top
-                )
-
-                homeActionSlots(
-                    viewportSize: viewportSize,
-                    safeAreaBottom: safeArea.bottom,
-                    buttonHeight: actionButtonHeight,
-                    buttonSpacing: actionButtonSpacing
-                )
+                    homeActionSlots(
+                        viewportSize: viewportSize,
+                        safeAreaBottom: safeArea.bottom,
+                        buttonHeight: actionButtonHeight,
+                        buttonSpacing: actionButtonSpacing
+                    )
+                }
+                .frame(width: viewportSize.width, height: viewportSize.height)
+                .clipped()
+                .offset(x: -safeArea.leading, y: -safeArea.top)
+            } else {
+                Color.clear
             }
-            .frame(width: viewportSize.width, height: viewportSize.height)
-            .clipped()
-            .offset(x: -safeArea.leading, y: -safeArea.top)
         }
         .onAppear {
-            if settings.soundEnabled {
-                settings.soundEnabled = MusicManager.shared.playBackgroundMusic("Aurnis_Luthael")
-            }
-
+            startBackgroundMusicIfReady()
             hasSave = hasSavedGame()
+        }
+        .onChange(of: startupTransitionComplete) { _, isReady in
+            if isReady { startBackgroundMusicIfReady() }
         }
         .sheet(isPresented: $showAboutSheet) {
             AboutProjectSheet()
@@ -96,22 +108,17 @@ struct StartView: View {
         let selectedTree = gardenManager.selectedTree
         let selectedTreeAsset = selectedTree?.imageAssetName
         let frameSide = min(viewportSize.height * 0.46, max(0, viewportSize.width - 16))
-        let alphaBottomFraction: CGFloat
-        switch selectedTree?.species {
-        case .oak: alphaBottomFraction = 967.0 / 1024.0
-        case .beech: alphaBottomFraction = 948.0 / 1024.0
-        case nil: alphaBottomFraction = 1188.0 / 1254.0
-        default: alphaBottomFraction = 967.0 / 1024.0
-        }
-        let centerY = contactY + (0.5 - alphaBottomFraction) * frameSide
         let potBounds = selectedTree.flatMap { BonsaiPotMetrics.lowerBounds(for: $0) }
-        let potWidth = potBounds.map { ($0.maxX - $0.minX) / 1024 * frameSide } ?? 0
-        let potCenterX = potBounds.map { ($0.minX + $0.maxX) / (2 * 1024) * frameSide } ?? frameSide / 2
+        let alphaBottomFraction: CGFloat = potBounds?.bottomFraction
+            ?? (selectedTree == nil ? CGFloat(1188.0 / 1254.0) : CGFloat(967.0 / 1024.0))
+        let centerY = contactY + (0.5 - alphaBottomFraction) * frameSide
+        let potWidth = potBounds.map { $0.widthFraction * frameSide } ?? 0
+        let potCenterX = potBounds.map { $0.centerFraction * frameSide } ?? frameSide / 2
         let shadowVisibleWidth = potWidth * 1.10
         let shadowFrameWidth = shadowVisibleWidth * 2172 / 1785
         let shadowFrameHeight = shadowFrameWidth * 724 / 2172
         let shadowImageCenterX = potCenterX + (0.5 - 1098.5 / 2172) * shadowFrameWidth
-        let shadowImageCenterY = frameSide * alphaBottomFraction + 3
+        let shadowImageCenterY = frameSide * alphaBottomFraction
             + (0.5 - 460.5 / 724) * shadowFrameHeight
         let contactCoreWidth = potWidth * 0.90
         let treeFrameTop = centerY - frameSide / 2
@@ -134,7 +141,7 @@ struct StartView: View {
                         .fill(Color(red: 0.24, green: 0.15, blue: 0.10).opacity(0.58))
                         .frame(width: contactCoreWidth, height: 3)
                         .blur(radius: 1.1)
-                        .position(x: potCenterX, y: frameSide * alphaBottomFraction + 3)
+                        .position(x: potCenterX, y: frameSide * alphaBottomFraction)
                         .animation(.easeInOut(duration: 0.24), value: selectedTreeAsset)
                         .allowsHitTesting(false)
                 }
@@ -222,6 +229,7 @@ struct StartView: View {
                 )
             }
             .buttonStyle(.plain)
+            .disabled(musicRequestInFlight)
             .accessibilityLabel(Text(loc("settings.sound")))
             .accessibilityValue(Text(loc(settings.soundEnabled ? "settings.sound.state.on" : "settings.sound.state.off")))
 
@@ -291,11 +299,19 @@ struct StartView: View {
     }
 
     private func toggleBackgroundSound() {
-        if settings.soundEnabled {
-            settings.soundEnabled = false
-            MusicManager.shared.stopMusic()
-        } else {
-            settings.soundEnabled = MusicManager.shared.playBackgroundMusic("Aurnis_Luthael")
+        requestBackgroundMusic(enabled: !settings.soundEnabled)
+    }
+
+    private func startBackgroundMusicIfReady() {
+        guard startupTransitionComplete, settings.soundEnabled, !musicRequestInFlight else { return }
+        requestBackgroundMusic(enabled: true)
+    }
+
+    private func requestBackgroundMusic(enabled: Bool) {
+        musicRequestInFlight = true
+        MusicManager.shared.setMusicEnabled(enabled) { succeeded in
+            settings.soundEnabled = succeeded && enabled
+            musicRequestInFlight = false
         }
     }
 
@@ -439,12 +455,21 @@ private struct HomeActionArtwork {
     )
 }
 
-private struct BonsaiAlphaBounds {
+fileprivate struct BonsaiAlphaBounds {
     let minX: CGFloat
     let maxX: CGFloat
+    let bottomY: CGFloat
+    let canvasSide: CGFloat
+
+    var widthFraction: CGFloat { (maxX - minX) / canvasSide }
+    var centerFraction: CGFloat { (minX + maxX) / (2 * canvasSide) }
+    var bottomFraction: CGFloat { bottomY / canvasSide }
 }
 
-private enum BonsaiPotMetrics {
+enum BonsaiPotMetrics {
+    // Existing shared mean for maple and juniper; Apple uses per-stage contact bounds below.
+    private static let alignedTreePotWidthFraction: CGFloat = 0.4631
+
     private static let oak: [(CGFloat, CGFloat)] = [
         (271, 753), (237, 761), (255, 793), (267, 809), (252, 795),
         (214, 756), (235, 784), (249, 794), (244, 793), (243, 809)
@@ -453,17 +478,57 @@ private enum BonsaiPotMetrics {
         (230, 794), (215, 785), (223, 819), (190, 848), (168, 846),
         (208, 841), (241, 812), (232, 812), (212, 811), (175, 824)
     ]
+    // Dense pot contact measured at alpha >= 240; faint perimeter noise is excluded.
+    private static let apple: [(minX: CGFloat, maxX: CGFloat, bottomY: CGFloat)] = [
+        (363, 891, 1215), (353, 898, 1212), (353, 896, 1197), (327, 934, 1213),
+        (300, 953, 1205), (335, 927, 1227), (388, 860, 1211), (375, 883, 1210),
+        (393, 868, 1199), (388, 852, 1189)
+    ]
+    private static let appleGardenAnchorY: CGFloat = 1204
+    private static let opaqueBottomY: [GardenSpecies: [CGFloat]] = [
+        .oak: [964, 963, 963, 963, 963, 964, 964, 964, 964, 964],
+        .beech: [945, 945, 943, 944, 944, 945, 943, 944, 945, 944],
+        .maple: [1203, 1203, 1200, 1200, 1204, 1203, 1203, 1203, 1203, 1203],
+        .juniper: Array(repeating: 1203, count: 10)
+    ]
 
-    static func lowerBounds(for tree: GardenTree) -> BonsaiAlphaBounds? {
+    fileprivate static func lowerBounds(for tree: GardenTree) -> BonsaiAlphaBounds? {
         guard (1...10).contains(tree.stage) else { return nil }
-        let bounds: [(CGFloat, CGFloat)]
-        switch tree.species {
-        case .oak: bounds = oak
-        case .beech: bounds = beech
-        case .juniper, .fir, .maple: return nil
+        if tree.species == .apple {
+            let bounds = apple[tree.stage - 1]
+            return BonsaiAlphaBounds(
+                minX: bounds.minX,
+                maxX: bounds.maxX,
+                bottomY: bounds.bottomY,
+                canvasSide: 1254
+            )
         }
-        let pair = bounds[tree.stage - 1]
-        return BonsaiAlphaBounds(minX: pair.0, maxX: pair.1)
+        guard let bottomY = opaqueBottomY[tree.species]?[tree.stage - 1] else { return nil }
+        switch tree.species {
+        case .oak, .beech:
+            let bounds = tree.species == .oak ? oak : beech
+            let pair = bounds[tree.stage - 1]
+            return BonsaiAlphaBounds(minX: pair.0, maxX: pair.1, bottomY: bottomY, canvasSide: 1024)
+        case .maple, .juniper:
+            let side: CGFloat = 1254
+            let width = alignedTreePotWidthFraction * side
+            return BonsaiAlphaBounds(
+                minX: (side - width) / 2,
+                maxX: (side + width) / 2,
+                bottomY: bottomY,
+                canvasSide: side
+            )
+        case .apple:
+            return nil
+        case .fir:
+            return nil
+        }
+    }
+
+    static func gardenOffsetY(for tree: GardenTree, frameSide: CGFloat) -> CGFloat {
+        guard tree.species == .apple,
+              let bounds = BonsaiPotMetrics.lowerBounds(for: tree) else { return 0 }
+        return (appleGardenAnchorY - bounds.bottomY) * frameSide / bounds.canvasSide
     }
 }
 

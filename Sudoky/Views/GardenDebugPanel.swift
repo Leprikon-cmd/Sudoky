@@ -2,95 +2,96 @@
 import SwiftUI
 
 struct GardenDebugPanel: View {
-    var body: some View {
-        NavigationStack {
-            Group {
-                if let manager = GardenManager.debugShared {
-                    GardenDebugControls(manager: manager)
-                } else {
-                    Text(loc("garden.debug.unavailable"))
-                        .textStyle(size: 17)
-                        .padding()
-                }
-            }
-            .navigationTitle(loc("garden.debug.title"))
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-
-private struct GardenDebugControls: View {
-    @ObservedObject var manager: GardenManager
+    @EnvironmentObject private var gardenManager: GardenManager
+    @EnvironmentObject private var settingsManager: SettingsManager
+    @EnvironmentObject private var playerProgressManager: PlayerProgressManager
+    @EnvironmentObject private var languageManager: LanguageManager
+    @EnvironmentObject private var fontManager: FontManager
     @Environment(\.dismiss) private var dismiss
 
-    var body: some View {
-        List {
-            Section(loc("garden.debug.state")) {
-                if let assetName = manager.selectedTree?.imageAssetName {
-                    Image(assetName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 220, height: 220)
-                        .id(assetName)
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Image("garden_icon_sprout_v2")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 220, height: 220)
-                        .frame(maxWidth: .infinity)
-                }
-                LabeledContent(loc("garden.debug.actions"), value: "\(manager.state?.availableActions ?? 0)")
-                LabeledContent(loc("garden.debug.stage"), value: "\(manager.selectedTree?.stage ?? 0)")
-                if manager.issue != nil {
-                    Text(loc("garden.storage.error"))
-                        .foregroundStyle(.red)
-                }
-            }
+    @State private var showingResetConfirmation = false
 
-            Section(loc("garden.debug.scenarios")) {
-                Button(loc("garden.debug.newUser")) {
-                    manager.debugReset(currentLevel: 1)
-                }
-                Button(loc("garden.debug.levelSix")) {
-                    manager.debugReset(currentLevel: 6)
-                }
-                Button(loc("garden.debug.addAction")) {
-                    manager.debugAddAction()
-                }
-                Button(loc("garden.debug.reload")) {
-                    manager.debugReload()
-                }
-                Button(loc("garden.debug.damageArchive")) {
-                    manager.debugDamageArchive()
-                }
-                Button(loc("garden.action.plant")) {
-                    manager.plant(.oak)
-                }
-                .disabled(!manager.canPlant(.oak))
-                Button(loc("garden.species.beech")) {
-                    manager.plant(.beech)
-                }
-                .disabled(!manager.canPlant(.beech))
-                if manager.state?.trees.contains(where: { $0.species == .oak }) == true,
-                   manager.state?.trees.contains(where: { $0.species == .beech }) == true {
-                    Button(loc("garden.oak.name")) {
-                        manager.selectTree(.oak)
+    var body: some View {
+        let _ = languageManager.language
+
+        NavigationStack {
+            ZStack {
+                Color(uiColor: .systemBackground)
+                    .ignoresSafeArea()
+
+                VStack(spacing: 14) {
+                    paperButton("garden.testMode.reset", action: requestReset)
+                    paperButton("garden.testMode.addStep", action: addOneStep)
+
+                    if gardenManager.issue != nil {
+                        Text(loc("garden.storage.error"))
+                            .textStyle(size: 15)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Button(loc("garden.species.beech")) {
-                        manager.selectTree(.beech)
-                    }
+
+                    Spacer(minLength: 0)
                 }
-                Button(loc("garden.action.grow")) {
-                    manager.growSelectedTree()
+                .padding(.horizontal, 22)
+                .padding(.top, 18)
+                .frame(maxWidth: 520, maxHeight: .infinity)
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(loc("garden.testMode.title"))
+                        .textStyle(size: 18)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .accessibilityAddTraits(.isHeader)
+                }
+                RoundBrushIconToolbarItem(
+                    assetName: "nav_close_brush_v2",
+                    accessibilityLabelKey: "common.close",
+                    placement: .navigationBarTrailing
+                ) {
+                    dismiss()
                 }
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(loc("common.close")) { dismiss() }
+        .alert(loc("garden.testMode.resetConfirmation.title"), isPresented: $showingResetConfirmation) {
+            Button(loc("common.yes"), role: .destructive, action: resetGarden)
+            Button(loc("common.no"), role: .cancel) { }
+        } message: {
+            Text(loc("garden.testMode.resetConfirmation.message"))
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.hidden)
+    }
+
+    private func paperButton(_ titleKey: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            PaperSectionCard {
+                Text(loc(titleKey))
+                    .textStyle(size: 17)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, minHeight: 42)
             }
         }
+        .buttonStyle(.plain)
+    }
+
+    private func requestReset() {
+        guard settingsManager.testModeEnabled else { return }
+        showingResetConfirmation = true
+    }
+
+    private func resetGarden() {
+        guard settingsManager.testModeEnabled else { return }
+        guard case .reset = gardenManager.resetWorkingGardenForTestMode(using: settingsManager) else { return }
+        playerProgressManager.reset()
+    }
+
+    private func addOneStep() {
+        guard settingsManager.testModeEnabled else { return }
+        _ = gardenManager.addOneGardenStepForTestMode(using: settingsManager)
     }
 }
 #endif
